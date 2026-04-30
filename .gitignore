@@ -32,6 +32,8 @@ parent-dashboard/.env
 # Kotlin / Java
 *.class
 *.jar
+# Allow the Gradle wrapper bootstrap JAR — it must be committed
+!gradle/wrapper/gradle-wrapper.jar
 *.war
 *.nar
 *.ear

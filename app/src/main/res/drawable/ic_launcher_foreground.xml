@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Placeholder "I" mark for Invigilator -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M44,28h20v8h-6v36h6v8h-20v-8h6v-36h-6z" />
+</vector>
