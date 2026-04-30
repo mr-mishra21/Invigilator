@@ -1,0 +1,29 @@
+Invigilator — Student Consent (18+)
+
+I confirm that I am 18 years of age or older.
+
+By tapping "I agree", I consent to the following:
+
+1. Invigilator will run on this device and may detect when I open
+   distracting apps during a study session that I have started.
+
+2. During an active session, Invigilator may close distracting apps
+   on my behalf.
+
+3. Invigilator will keep a log of my study sessions on its servers
+   for up to 90 days. This log includes session times, app usage
+   events during sessions, and AI tutor interactions. The log does
+   not include the contents of my screen, photos, or audio recordings.
+
+4. I can stop any session at any time by tapping the stop button
+   in Invigilator.
+
+5. I can delete my account and all associated data at any time
+   from the Settings screen.
+
+6. I am consenting on my own behalf. No parent, school, or other
+   party has signed this consent for me.
+
+I have read and understood the above.
+
+Consent version: v1.0

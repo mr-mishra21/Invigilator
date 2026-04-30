@@ -1,0 +1,39 @@
+Invigilator — Parental Consent for a Minor
+
+I confirm that I am the parent or legal guardian of the student
+whose account I am about to link to my own.
+
+I understand that:
+
+1. Invigilator is an educational supervision app. It will run on
+   the student's device and may, during sessions I or the student
+   start, detect and close distracting apps.
+
+2. Invigilator will collect a log of the student's study sessions,
+   including session times, app usage events during sessions, and
+   AI tutor interactions. This log will be stored on Invigilator's
+   servers in India for up to 90 days, then automatically deleted.
+
+3. Invigilator does NOT collect: the contents of the student's
+   screen, photos, audio, location, contacts, or browsing history
+   outside of study sessions.
+
+4. If the student uses Invigilator's optional camera mode, the camera
+   feed is processed only on the student's device. Camera video is
+   never uploaded, stored, or transmitted.
+
+5. I will receive notifications when Invigilator detects that the
+   student is persistently distracted during a session.
+
+6. I can revoke this consent at any time from the Parent dashboard.
+   When I revoke, the student's account becomes inactive and all
+   associated data is deleted within 7 days.
+
+7. The student has been informed in age-appropriate language that
+   this app supervises their study time.
+
+By typing my full name below and tapping "I consent", I am providing
+verifiable parental consent under Section 9 of India's Digital
+Personal Data Protection Act, 2023.
+
+Consent version: v1.0
