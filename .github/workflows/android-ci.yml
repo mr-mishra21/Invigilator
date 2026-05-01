@@ -25,6 +25,12 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Grant execute permission for scripts
+        run: chmod +x scripts/*.sh
+
+      - name: Check consent hash sync
+        run: scripts/sync-consent-hashes.sh --check
+
       # google-services.json is gitignored. Copy the example so the build can resolve it.
       - name: Copy placeholder google-services.json
         run: cp app/google-services.json.example app/google-services.json
