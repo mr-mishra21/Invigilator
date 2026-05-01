@@ -2,9 +2,17 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{db}/documents {
 
-    // Users can read/write only their own user doc
+    // Returns true when the requester is the parent of the student being read.
+    // Used so a student can read their linked parent's displayName for StudentHome.
+    function isLinkedParentOf(requesterUid, studentUid) {
+      return exists(/databases/$(db)/documents/users/$(requesterUid)/linkedStudents/$(studentUid));
+    }
+
+    // Users can read their own doc; a student can also read their linked parent's doc.
     match /users/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
+      allow read: if request.auth != null
+                  && (request.auth.uid == uid
+                      || isLinkedParentOf(request.auth.uid, uid));
       allow create: if request.auth != null
                     && request.auth.uid == uid
                     && request.resource.data.role in ['parent', 'student'];
