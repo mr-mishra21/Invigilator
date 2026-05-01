@@ -17,6 +17,9 @@ import app.invigilator.ui.auth.PhoneEntryRoute
 import app.invigilator.ui.consent.ConsentRoute
 import app.invigilator.ui.home.ParentHomeRoute
 import app.invigilator.ui.home.StudentHomeRoute
+import app.invigilator.ui.linking.ConfirmStudentScreen
+import app.invigilator.ui.linking.EnterCodeRoute
+import app.invigilator.ui.linking.LinkingCompletionRoute
 import app.invigilator.ui.linking.StudentShareCodeRoute
 import app.invigilator.ui.onboarding.DobEntryRoute
 import app.invigilator.ui.onboarding.NameEntryRoute
@@ -192,11 +195,12 @@ fun InvigilatorNavHost(
                             }
                         }
                         ConsentType.PARENT_FOR_MINOR.firestoreValue -> {
-                            // Part 4 handles the linked-student batch write before navigating.
-                            // For now, navigate to ParentHome — Part 4 will intercept this.
-                            navController.navigate(Route.ParentHome) {
-                                popUpTo(0) { inclusive = true }
-                            }
+                            navController.navigate(
+                                Route.ParentLinkingComplete(
+                                    studentUid = route.studentUid,
+                                    studentDisplayName = route.studentDisplayName,
+                                )
+                            ) { popUpTo(0) { inclusive = true } }
                         }
                         else -> {
                             navController.navigate(Route.ParentHome) {
@@ -225,29 +229,45 @@ fun InvigilatorNavHost(
 
         // ── Parent enter code (minor linking, parent side) ────────────────────
         composable<Route.ParentEnterCode> {
-            EnterCodePlaceholder(
-                onNavigateToParentHome = {
-                    navController.navigate(Route.ParentHome) {
-                        popUpTo(0) { inclusive = true }
-                    }
+            EnterCodeRoute(
+                onStudentConfirmed = { claim ->
+                    navController.navigate(
+                        Route.ConfirmStudent(
+                            studentUid = claim.studentUid,
+                            studentName = claim.studentDisplayName,
+                            studentDobMillis = claim.studentDateOfBirthMillis ?: 0L,
+                        )
+                    )
                 },
             )
         }
 
-        // ── Confirm student (Part 4) ───────────────────────────────────────────
+        // ── Confirm student (parent side) ─────────────────────────────────────
         composable<Route.ConfirmStudent> { backStackEntry ->
             val route = backStackEntry.toRoute<Route.ConfirmStudent>()
-            ConfirmStudentPlaceholder(
+            ConfirmStudentScreen(
                 studentName = route.studentName,
-                studentDobMillis = route.studentDobMillis,
-                studentUid = route.studentUid,
+                studentDateOfBirthMillis = route.studentDobMillis.takeIf { it > 0L },
                 onConfirmed = {
                     navController.navigate(
-                        Route.Consent(ConsentType.PARENT_FOR_MINOR.firestoreValue)
+                        Route.Consent(
+                            type = ConsentType.PARENT_FOR_MINOR.firestoreValue,
+                            studentUid = route.studentUid,
+                            studentDisplayName = route.studentName,
+                        )
                     )
                 },
-                onNotMyChild = {
-                    navController.popBackStack()
+                onNotMyChild = { navController.popBackStack() },
+            )
+        }
+
+        // ── Linking completion (batch write after PARENT_FOR_MINOR consent) ───
+        composable<Route.ParentLinkingComplete> {
+            LinkingCompletionRoute(
+                onNavigateToParentHome = {
+                    navController.navigate(Route.ParentHome) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 },
             )
         }

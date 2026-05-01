@@ -34,4 +34,10 @@ interface LinkingRepository {
         parentUid: String,
         doc: app.invigilator.core.user.LinkedStudentDoc,
     ): Result<Unit>
+
+    /**
+     * Deletes the /users/{parentUid}/linkedStudents/{studentUid} document.
+     * Used to roll back a partial linking if account activation fails.
+     */
+    suspend fun deleteLinkedStudentRecord(parentUid: String, studentUid: String): Result<Unit>
 }

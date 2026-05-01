@@ -77,6 +77,17 @@ internal class LinkingRepositoryImpl @Inject constructor(
             .await()
     }.map { Unit }
 
+    override suspend fun deleteLinkedStudentRecord(
+        parentUid: String,
+        studentUid: String,
+    ): Result<Unit> = runCatching {
+        firestore
+            .collection("users").document(parentUid)
+            .collection("linkedStudents").document(studentUid)
+            .delete()
+            .await()
+    }.map { Unit }
+
     private fun Throwable.toLinkingError(): LinkingError {
         val msg = message ?: ""
         return when {

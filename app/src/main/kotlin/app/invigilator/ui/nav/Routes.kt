@@ -16,7 +16,12 @@ sealed interface Route {
     @Serializable data object NameEntry : Route
 
     // ── Post-onboarding ───────────────────────────────────────────────────────
-    @Serializable data class  Consent(val type: String) : Route
+    @Serializable data class  Consent(
+        val type: String,
+        /** Set only for PARENT_FOR_MINOR; passed through so onComplete can start the batch write. */
+        val studentUid: String = "",
+        val studentDisplayName: String = "",
+    ) : Route
     @Serializable data object StudentShareCode : Route
     @Serializable data object StudentLinkingPending : Route
     @Serializable data object ParentEnterCode : Route
@@ -25,6 +30,11 @@ sealed interface Route {
         val studentUid: String,
         val studentName: String,
         val studentDobMillis: Long,
+    ) : Route
+    /** Executes the batch write (linkedStudents doc + activate student) after parent consent. */
+    @Serializable data class  ParentLinkingComplete(
+        val studentUid: String,
+        val studentDisplayName: String,
     ) : Route
 
     // ── Home ──────────────────────────────────────────────────────────────────
