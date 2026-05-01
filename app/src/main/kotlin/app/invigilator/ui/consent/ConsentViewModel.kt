@@ -8,6 +8,7 @@ import app.invigilator.core.consent.ConsentDoc
 import app.invigilator.core.consent.ConsentRepository
 import app.invigilator.core.consent.ConsentType
 import app.invigilator.core.consent.ConsentVersions
+import app.invigilator.core.user.UserRepository
 import app.invigilator.core.util.toUserMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,6 +48,7 @@ data class ConsentUiState(
 class ConsentViewModel @Inject constructor(
     private val consentRepository: ConsentRepository,
     private val authRepository: AuthRepository,
+    private val userRepository: UserRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -143,6 +145,23 @@ class ConsentViewModel @Inject constructor(
             } != null
 
             if (serverConfirmed) {
+                // ADULT_STUDENT_SELF and PARENT_TOS activate the consenter's own account.
+                // PARENT_FOR_MINOR activation is a separate batch write handled by Part 4.
+                val needsSelfActivation = consentType == ConsentType.ADULT_STUDENT_SELF ||
+                        consentType == ConsentType.PARENT_TERMS_OF_SERVICE
+                if (needsSelfActivation) {
+                    val activateResult = userRepository.activateAccount(uid)
+                    if (activateResult.isFailure) {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                error = activateResult.exceptionOrNull()?.toUserMessage()
+                                    ?: "Failed to activate account. Try again.",
+                            )
+                        }
+                        return@launch
+                    }
+                }
                 _uiState.update { it.copy(isLoading = false, isComplete = true) }
             } else {
                 // Timeout — delete the incomplete doc so the user can retry

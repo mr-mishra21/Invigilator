@@ -6,6 +6,7 @@ import app.invigilator.core.consent.ConsentDoc
 import app.invigilator.core.consent.ConsentRepository
 import app.invigilator.core.consent.ConsentTextResult
 import app.invigilator.core.consent.ConsentType
+import app.invigilator.core.user.UserRepository
 import app.invigilator.util.MainDispatcherRule
 import io.mockk.coEvery
 import io.mockk.every
@@ -35,12 +36,13 @@ class ConsentViewModelTest {
 
     private val consentRepository: ConsentRepository = mockk()
     private val authRepository: AuthRepository = mockk()
+    private val userRepository: UserRepository = mockk()
 
     private fun savedState(type: String = ConsentType.ADULT_STUDENT_SELF.firestoreValue) =
         SavedStateHandle(mapOf("type" to type))
 
     private fun viewModel(type: String = ConsentType.ADULT_STUDENT_SELF.firestoreValue) =
-        ConsentViewModel(consentRepository, authRepository, savedState(type))
+        ConsentViewModel(consentRepository, authRepository, userRepository, savedState(type))
 
     private fun stubText(type: ConsentType = ConsentType.ADULT_STUDENT_SELF) {
         every {
@@ -81,6 +83,7 @@ class ConsentViewModelTest {
         every { authRepository.currentUserId } returns "uid-test"
         coEvery { consentRepository.recordConsent(any<ConsentDoc>()) } returns Result.success("consent-123")
         every { consentRepository.awaitServerTimestamp("consent-123") } returns flowOf(true)
+        coEvery { userRepository.activateAccount(any(), any()) } returns Result.success(Unit)
 
         val vm = viewModel()
         vm.onEvent(ConsentEvent.ScrolledToEnd)

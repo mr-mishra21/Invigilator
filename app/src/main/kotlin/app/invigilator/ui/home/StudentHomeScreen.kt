@@ -1,10 +1,16 @@
 package app.invigilator.ui.home
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,26 +27,30 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun StudentHomeRoute(
     onLoggedOut: () -> Unit,
-    viewModel: HomeViewModel = hiltViewModel(),
+    viewModel: StudentHomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(state.loggedOut) {
         if (state.loggedOut) onLoggedOut()
     }
-    StudentHomeScreen(onLogout = viewModel::signOut)
+    StudentHomeScreen(
+        state = state,
+        onLogout = viewModel::signOut,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudentHomeScreen(
+    state: StudentHomeUiState,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -67,7 +77,7 @@ fun StudentHomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Today's session") },
+                title = { Text(if (state.displayName.isNotBlank()) "Hi, ${state.displayName}" else "Student Home") },
                 actions = {
                     IconButton(onClick = { showMenu = true }) {
                         Icon(Icons.Default.MoreVert, contentDescription = "More options")
@@ -86,16 +96,34 @@ fun StudentHomeScreen(
         },
         modifier = modifier,
     ) { padding ->
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
         ) {
-            Text(
-                text = "Student home\n(Phase 4: session screen coming next)",
-                style = MaterialTheme.typography.bodyLarge,
-            )
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Today's study session", style = MaterialTheme.typography.titleMedium)
+                    Spacer(Modifier.height(8.dp))
+                    Text("Not started yet.", style = MaterialTheme.typography.bodyMedium)
+                    Spacer(Modifier.height(12.dp))
+                    Button(onClick = { /* Sprint 3 */ }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Start session")
+                    }
+                }
+            }
+
+            if (state.parentDisplayName != null) {
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    text = "Linked to: ${state.parentDisplayName}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
-        // suppress unused padding warning
-        padding
     }
 }
