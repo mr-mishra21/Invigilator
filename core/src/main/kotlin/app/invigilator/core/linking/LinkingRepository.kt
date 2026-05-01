@@ -22,6 +22,11 @@ interface LinkingRepository {
     fun observeLinkingCode(code: String): Flow<LinkingCodeDoc?>
 
     /**
+     * Streams the /users/{parentUid}/linkedStudents sub-collection in real time.
+     */
+    fun observeLinkedStudents(parentUid: String): Flow<List<app.invigilator.core.user.LinkedStudentDoc>>
+
+    /**
      * Calls the `claimLinkingCode` Cloud Function as the authenticated parent.
      * Returns the student's display name and DOB so the parent can confirm identity.
      */

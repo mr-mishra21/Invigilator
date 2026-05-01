@@ -1,13 +1,24 @@
 package app.invigilator.ui.home
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -23,25 +34,33 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun ParentHomeRoute(
     onLoggedOut: () -> Unit,
-    viewModel: HomeViewModel = hiltViewModel(),
+    onNavigateToEnterCode: () -> Unit,
+    viewModel: ParentHomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(state.loggedOut) {
         if (state.loggedOut) onLoggedOut()
     }
-    ParentHomeScreen(onLogout = viewModel::signOut)
+    ParentHomeScreen(
+        state = state,
+        onLogout = viewModel::signOut,
+        onAddStudent = onNavigateToEnterCode,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ParentHomeScreen(
+    state: ParentHomeUiState,
     onLogout: () -> Unit,
+    onAddStudent: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -84,18 +103,74 @@ fun ParentHomeScreen(
                 },
             )
         },
+        floatingActionButton = {
+            FloatingActionButton(onClick = onAddStudent) {
+                Icon(Icons.Default.Add, contentDescription = "Add a student")
+            }
+        },
         modifier = modifier,
     ) { padding ->
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
         ) {
-            Text(
-                text = "Parent home\n(Phase 4: student list coming next)",
-                style = MaterialTheme.typography.bodyLarge,
-            )
+            when {
+                state.isLoading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+                state.linkedStudents.isEmpty() -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        Text(
+                            text = "No students linked yet.",
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                        Text(
+                            text = "Tap + to add your first student.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                else -> {
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        items(state.linkedStudents, key = { it.uid }) { student ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(
+                                        text = student.displayName,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                    )
+                                    Text(
+                                        text = student.accountStatus.replace('_', ' '),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = if (student.accountStatus == "active")
+                                            MaterialTheme.colorScheme.primary
+                                        else
+                                            MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
-        // suppress unused padding warning — content fills the whole scaffold
-        padding
     }
 }

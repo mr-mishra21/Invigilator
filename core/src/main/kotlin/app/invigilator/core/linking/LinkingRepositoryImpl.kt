@@ -35,6 +35,19 @@ internal class LinkingRepositoryImpl @Inject constructor(
         code
     }
 
+    override fun observeLinkedStudents(parentUid: String): Flow<List<LinkedStudentDoc>> = callbackFlow {
+        val listener = firestore
+            .collection("users").document(parentUid)
+            .collection("linkedStudents")
+            .addSnapshotListener { snap, error ->
+                if (error != null) { close(error); return@addSnapshotListener }
+                val docs = snap?.documents?.mapNotNull { it.toObject(LinkedStudentDoc::class.java) }
+                    ?: emptyList()
+                trySend(docs)
+            }
+        awaitClose { listener.remove() }
+    }
+
     override fun observeLinkingCode(code: String): Flow<LinkingCodeDoc?> = callbackFlow {
         val listener = firestore.collection("linkingCodes").document(code)
             .addSnapshotListener { snap, error ->

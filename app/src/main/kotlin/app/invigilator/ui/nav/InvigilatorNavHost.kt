@@ -280,6 +280,9 @@ fun InvigilatorNavHost(
                         popUpTo(0) { inclusive = true }
                     }
                 },
+                onNavigateToEnterCode = {
+                    navController.navigate(Route.ParentEnterCode)
+                },
             )
         }
 
