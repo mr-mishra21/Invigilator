@@ -16,16 +16,22 @@ fun SplashRoute(
     onNavigateToOnboarding: () -> Unit,
     onNavigateToParentHome: () -> Unit,
     onNavigateToStudentHome: () -> Unit,
+    onNavigateToAdultStudentConsent: () -> Unit,
+    onNavigateToStudentShareCode: () -> Unit,
+    onNavigateToParentConsent: () -> Unit,
     viewModel: SplashViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(state.destination) {
         when (state.destination) {
-            SplashDestination.Onboarding   -> onNavigateToOnboarding()
-            SplashDestination.ParentHome   -> onNavigateToParentHome()
-            SplashDestination.StudentHome  -> onNavigateToStudentHome()
-            null                           -> Unit
+            SplashDestination.Onboarding             -> onNavigateToOnboarding()
+            SplashDestination.ParentHome             -> onNavigateToParentHome()
+            SplashDestination.StudentHome            -> onNavigateToStudentHome()
+            SplashDestination.AdultStudentConsent    -> onNavigateToAdultStudentConsent()
+            SplashDestination.StudentShareCodeResume -> onNavigateToStudentShareCode()
+            SplashDestination.ParentConsentResume    -> onNavigateToParentConsent()
+            null                                     -> Unit
         }
     }
 

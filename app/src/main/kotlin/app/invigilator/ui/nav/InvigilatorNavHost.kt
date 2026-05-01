@@ -1,12 +1,7 @@
 package app.invigilator.ui.nav
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -15,11 +10,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import app.invigilator.core.consent.ConsentType
 import app.invigilator.core.user.UserRole
 import app.invigilator.ui.auth.OtpEntryRoute
 import app.invigilator.ui.auth.PhoneEntryRoute
-import app.invigilator.ui.home.ParentHomeScreen
-import app.invigilator.ui.home.StudentHomeScreen
+import app.invigilator.ui.home.ParentHomeRoute
+import app.invigilator.ui.home.StudentHomeRoute
 import app.invigilator.ui.onboarding.DobEntryRoute
 import app.invigilator.ui.onboarding.NameEntryRoute
 import app.invigilator.ui.onboarding.OnboardingEvent
@@ -52,6 +48,25 @@ fun InvigilatorNavHost(
                 },
                 onNavigateToStudentHome = {
                     navController.navigate(Route.StudentHome) {
+                        popUpTo(Route.Splash) { inclusive = true }
+                    }
+                },
+                onNavigateToAdultStudentConsent = {
+                    navController.navigate(
+                        Route.Consent(ConsentType.ADULT_STUDENT_SELF.firestoreValue)
+                    ) {
+                        popUpTo(Route.Splash) { inclusive = true }
+                    }
+                },
+                onNavigateToStudentShareCode = {
+                    navController.navigate(Route.StudentShareCode) {
+                        popUpTo(Route.Splash) { inclusive = true }
+                    }
+                },
+                onNavigateToParentConsent = {
+                    navController.navigate(
+                        Route.Consent(ConsentType.PARENT_TERMS_OF_SERVICE.firestoreValue)
+                    ) {
                         popUpTo(Route.Splash) { inclusive = true }
                     }
                 },
@@ -134,7 +149,9 @@ fun InvigilatorNavHost(
 
                 NameEntryRoute(
                     onAdultStudentConsent = {
-                        navController.navigate(Route.Consent("AdultStudentSelfConsent")) {
+                        navController.navigate(
+                            Route.Consent(ConsentType.ADULT_STUDENT_SELF.firestoreValue)
+                        ) {
                             popUpTo(Route.OnboardingGraph) { inclusive = true }
                         }
                     },
@@ -144,7 +161,9 @@ fun InvigilatorNavHost(
                         }
                     },
                     onParentConsent = {
-                        navController.navigate(Route.Consent("ParentTermsOfService")) {
+                        navController.navigate(
+                            Route.Consent(ConsentType.PARENT_TERMS_OF_SERVICE.firestoreValue)
+                        ) {
                             popUpTo(Route.OnboardingGraph) { inclusive = true }
                         }
                     },
@@ -153,32 +172,84 @@ fun InvigilatorNavHost(
             }
         }
 
-        // ── Phase 4 placeholders ──────────────────────────────────────────────
-        composable<Route.Consent> {
-            PlaceholderScreen("Phase 4: consent flow not yet implemented")
+        // ── Consent (shared, parameterized by type string) ────────────────────
+        composable<Route.Consent> { backStackEntry ->
+            val route = backStackEntry.toRoute<Route.Consent>()
+            // Part 1 will wire ConsentRoute here. Placeholder until then.
+            ConsentPlaceholder(
+                type = route.type,
+                onNavigateToStudentHome = {
+                    navController.navigate(Route.StudentHome) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onNavigateToParentHome = {
+                    navController.navigate(Route.ParentHome) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+            )
         }
 
+        // ── Student share code (minor linking, student side) ──────────────────
         composable<Route.StudentShareCode> {
-            PlaceholderScreen("Phase 4: student share-code screen not yet implemented")
+            // Part 3 will wire StudentShareCodeRoute here.
+            ShareCodePlaceholder()
         }
 
         composable<Route.StudentLinkingPending> {
-            PlaceholderScreen("Phase 4: linking pending screen not yet implemented")
+            ShareCodePlaceholder()
         }
 
+        // ── Parent enter code (minor linking, parent side) ────────────────────
         composable<Route.ParentEnterCode> {
-            PlaceholderScreen("Phase 4: parent enter-code screen not yet implemented")
+            // Part 4 will wire EnterCodeRoute here.
+            EnterCodePlaceholder(
+                onNavigateToParentHome = {
+                    navController.navigate(Route.ParentHome) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+            )
+        }
+
+        // ── Confirm student (Part 4) ───────────────────────────────────────────
+        composable<Route.ConfirmStudent> { backStackEntry ->
+            val route = backStackEntry.toRoute<Route.ConfirmStudent>()
+            ConfirmStudentPlaceholder(
+                studentName = route.studentName,
+                studentDobMillis = route.studentDobMillis,
+                studentUid = route.studentUid,
+                onConfirmed = {
+                    navController.navigate(
+                        Route.Consent(ConsentType.PARENT_FOR_MINOR.firestoreValue)
+                    )
+                },
+                onNotMyChild = {
+                    navController.popBackStack()
+                },
+            )
         }
 
         // ── Home ──────────────────────────────────────────────────────────────
-        composable<Route.ParentHome> { ParentHomeScreen() }
-        composable<Route.StudentHome> { StudentHomeScreen() }
-    }
-}
+        composable<Route.ParentHome> {
+            ParentHomeRoute(
+                onLoggedOut = {
+                    navController.navigate(Route.OnboardingGraph) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+            )
+        }
 
-@Composable
-private fun PlaceholderScreen(message: String, modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = message, style = MaterialTheme.typography.bodyLarge)
+        composable<Route.StudentHome> {
+            StudentHomeRoute(
+                onLoggedOut = {
+                    navController.navigate(Route.OnboardingGraph) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+            )
+        }
     }
 }

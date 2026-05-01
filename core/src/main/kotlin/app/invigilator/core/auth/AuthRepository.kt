@@ -13,4 +13,7 @@ interface AuthRepository {
 
     /** Emits the current auth state and then any subsequent changes. Never throws. */
     val authState: Flow<AuthState>
+
+    /** The UID of the currently signed-in user, or null if signed out. */
+    val currentUserId: String?
 }

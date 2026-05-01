@@ -16,4 +16,6 @@ data class UserDoc(
     val createdAt: Timestamp = Timestamp.now(),
     val accountStatus: String = AccountStatus.PENDING_CONSENT.firestoreValue,
     val consentRefs: List<DocumentReference> = emptyList(),
+    /** Populated when a minor student is linked to a parent. Null for parents and adult students. */
+    val parentUid: String? = null,
 )

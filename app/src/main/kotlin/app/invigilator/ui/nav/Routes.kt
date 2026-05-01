@@ -15,11 +15,17 @@ sealed interface Route {
     @Serializable data class  OtpEntry(val role: String, val phone: String) : Route
     @Serializable data object NameEntry : Route
 
-    // ── Post-onboarding (Phase 4) ─────────────────────────────────────────────
+    // ── Post-onboarding ───────────────────────────────────────────────────────
     @Serializable data class  Consent(val type: String) : Route
     @Serializable data object StudentShareCode : Route
     @Serializable data object StudentLinkingPending : Route
     @Serializable data object ParentEnterCode : Route
+    /** Shows student name + age for parent to confirm before consenting. */
+    @Serializable data class  ConfirmStudent(
+        val studentUid: String,
+        val studentName: String,
+        val studentDobMillis: Long,
+    ) : Route
 
     // ── Home ──────────────────────────────────────────────────────────────────
     @Serializable data object ParentHome : Route

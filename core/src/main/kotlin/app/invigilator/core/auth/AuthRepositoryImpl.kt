@@ -84,6 +84,9 @@ internal class AuthRepositoryImpl @Inject constructor(
         firebaseAuth.signOut()
     }.fold(onSuccess = { Result.success(Unit) }, onFailure = { Result.failure(it.toAuthError()) })
 
+    override val currentUserId: String?
+        get() = firebaseAuth.currentUser?.uid
+
     override val authState: Flow<AuthState> = callbackFlow {
         val listener = FirebaseAuth.AuthStateListener { auth ->
             trySend(
