@@ -14,8 +14,10 @@ import app.invigilator.core.consent.ConsentType
 import app.invigilator.core.user.UserRole
 import app.invigilator.ui.auth.OtpEntryRoute
 import app.invigilator.ui.auth.PhoneEntryRoute
+import app.invigilator.ui.consent.ConsentRoute
 import app.invigilator.ui.home.ParentHomeRoute
 import app.invigilator.ui.home.StudentHomeRoute
+import app.invigilator.ui.linking.StudentShareCodeRoute
 import app.invigilator.ui.onboarding.DobEntryRoute
 import app.invigilator.ui.onboarding.NameEntryRoute
 import app.invigilator.ui.onboarding.OnboardingEvent
@@ -175,17 +177,32 @@ fun InvigilatorNavHost(
         // ── Consent (shared, parameterized by type string) ────────────────────
         composable<Route.Consent> { backStackEntry ->
             val route = backStackEntry.toRoute<Route.Consent>()
-            // Part 1 will wire ConsentRoute here. Placeholder until then.
-            ConsentPlaceholder(
-                type = route.type,
-                onNavigateToStudentHome = {
-                    navController.navigate(Route.StudentHome) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                },
-                onNavigateToParentHome = {
-                    navController.navigate(Route.ParentHome) {
-                        popUpTo(0) { inclusive = true }
+
+            ConsentRoute(
+                onComplete = {
+                    when (route.type) {
+                        ConsentType.ADULT_STUDENT_SELF.firestoreValue -> {
+                            navController.navigate(Route.StudentHome) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }
+                        ConsentType.PARENT_TERMS_OF_SERVICE.firestoreValue -> {
+                            navController.navigate(Route.ParentHome) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }
+                        ConsentType.PARENT_FOR_MINOR.firestoreValue -> {
+                            // Part 4 handles the linked-student batch write before navigating.
+                            // For now, navigate to ParentHome — Part 4 will intercept this.
+                            navController.navigate(Route.ParentHome) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }
+                        else -> {
+                            navController.navigate(Route.ParentHome) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }
                     }
                 },
             )
@@ -193,8 +210,13 @@ fun InvigilatorNavHost(
 
         // ── Student share code (minor linking, student side) ──────────────────
         composable<Route.StudentShareCode> {
-            // Part 3 will wire StudentShareCodeRoute here.
-            ShareCodePlaceholder()
+            StudentShareCodeRoute(
+                onNavigateToStudentHome = {
+                    navController.navigate(Route.StudentHome) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+            )
         }
 
         composable<Route.StudentLinkingPending> {
@@ -203,7 +225,6 @@ fun InvigilatorNavHost(
 
         // ── Parent enter code (minor linking, parent side) ────────────────────
         composable<Route.ParentEnterCode> {
-            // Part 4 will wire EnterCodeRoute here.
             EnterCodePlaceholder(
                 onNavigateToParentHome = {
                     navController.navigate(Route.ParentHome) {
