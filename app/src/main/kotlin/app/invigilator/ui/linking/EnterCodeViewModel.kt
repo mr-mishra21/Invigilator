@@ -2,6 +2,7 @@ package app.invigilator.ui.linking
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.invigilator.core.auth.AuthRepository
 import app.invigilator.core.linking.ClaimResult
 import app.invigilator.core.linking.LinkingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,6 +18,7 @@ data class EnterCodeUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val claimedResult: ClaimResult? = null,
+    val loggedOut: Boolean = false,
 ) {
     val isConfirmEnabled: Boolean get() = digits.all { it.isNotBlank() } && !isLoading
     val code: String get() = digits.joinToString("")
@@ -25,6 +27,7 @@ data class EnterCodeUiState(
 @HiltViewModel
 class EnterCodeViewModel @Inject constructor(
     private val linkingRepository: LinkingRepository,
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EnterCodeUiState())
@@ -64,5 +67,16 @@ class EnterCodeViewModel @Inject constructor(
 
     fun clearClaimedResult() {
         _uiState.update { it.copy(claimedResult = null) }
+    }
+
+    fun signOut() {
+        viewModelScope.launch {
+            authRepository.signOut()
+            _uiState.update { it.copy(loggedOut = true) }
+        }
+    }
+
+    fun clearLoggedOut() {
+        _uiState.update { it.copy(loggedOut = false) }
     }
 }

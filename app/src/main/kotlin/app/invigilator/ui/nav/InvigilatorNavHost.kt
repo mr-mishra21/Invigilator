@@ -220,6 +220,11 @@ fun InvigilatorNavHost(
                         popUpTo(0) { inclusive = true }
                     }
                 },
+                onLoggedOut = {
+                    navController.navigate(Route.OnboardingGraph) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
             )
         }
 
@@ -238,6 +243,11 @@ fun InvigilatorNavHost(
                             studentDobMillis = claim.studentDateOfBirthMillis ?: 0L,
                         )
                     )
+                },
+                onLoggedOut = {
+                    navController.navigate(Route.OnboardingGraph) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 },
             )
         }

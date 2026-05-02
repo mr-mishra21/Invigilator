@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- [DRAFT] Assamese translations -->
+<resources>
+    <string name="cd_more_options">আৰু বিকল্প</string>
+    <string name="action_logout">লগ আউট</string>
+    <string name="action_cancel">বাতিল কৰক</string>
+    <string name="logout_confirm_title">লগ আউট কৰিবনে?</string>
+    <string name="logout_confirm_onboarding_body">আপোনাৰ এতিয়ালৈকে অগ্ৰগতি সংৰক্ষণ কৰা হব। অব্যাহত ৰাখিবলৈ একেটা ফোন নম্বৰেৰে পুনৰ চাইন ইন কৰক।</string>
+</resources>

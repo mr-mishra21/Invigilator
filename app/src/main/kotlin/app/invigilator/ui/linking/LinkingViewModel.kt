@@ -22,6 +22,7 @@ data class LinkingUiState(
     val secondsRemaining: Int = 1800,    // 30 * 60
     val isClaimed: Boolean = false,
     val navigateToStudentHome: Boolean = false,
+    val loggedOut: Boolean = false,
     val isGenerating: Boolean = false,
     val error: String? = null,
 )
@@ -54,6 +55,17 @@ class LinkingViewModel @Inject constructor(
 
     fun clearNavigateToStudentHome() {
         _uiState.update { it.copy(navigateToStudentHome = false) }
+    }
+
+    fun signOut() {
+        viewModelScope.launch {
+            authRepository.signOut()
+            _uiState.update { it.copy(loggedOut = true) }
+        }
+    }
+
+    fun clearLoggedOut() {
+        _uiState.update { it.copy(loggedOut = false) }
     }
 
     private fun generateCode() {

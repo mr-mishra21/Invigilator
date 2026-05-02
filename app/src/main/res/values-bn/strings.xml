@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- [DRAFT] Bengali translations -->
+<resources>
+    <string name="cd_more_options">আরও বিকল্প</string>
+    <string name="action_logout">লগ আউট</string>
+    <string name="action_cancel">বাতিল করুন</string>
+    <string name="logout_confirm_title">লগ আউট করবেন?</string>
+    <string name="logout_confirm_onboarding_body">আপনার এখন পর্যন্ত অগ্রগতি সংরক্ষিত থাকবে। চালিয়ে যেতে একই ফোন নম্বর দিয়ে আবার সাইন ইন করুন।</string>
+</resources>

@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Invigilator</string>
+    <string name="cd_more_options">More options</string>
+    <string name="action_logout">Log out</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="logout_confirm_title">Log out?</string>
+    <string name="logout_confirm_onboarding_body">Your progress so far will be saved. You can sign back in with the same phone number to continue.</string>
 </resources>

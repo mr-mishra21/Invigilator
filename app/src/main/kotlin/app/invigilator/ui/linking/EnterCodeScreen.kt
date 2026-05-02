@@ -13,9 +13,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,10 +33,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.invigilator.core.linking.ClaimResult
+import app.invigilator.ui.common.OnboardingLogoutMenu
 
 @Composable
 fun EnterCodeRoute(
     onStudentConfirmed: (ClaimResult) -> Unit,
+    onLoggedOut: () -> Unit,
     viewModel: EnterCodeViewModel = hiltViewModel(),
     modifier: Modifier = Modifier,
 ) {
@@ -47,95 +52,116 @@ fun EnterCodeRoute(
         }
     }
 
+    LaunchedEffect(state.loggedOut) {
+        if (state.loggedOut) {
+            viewModel.clearLoggedOut()
+            onLoggedOut()
+        }
+    }
+
     EnterCodeScreen(
         state = state,
         onDigitChanged = viewModel::onDigitChanged,
         onAllDigitsEntered = viewModel::onAllDigitsEntered,
         onConfirmTapped = viewModel::onConfirmTapped,
+        onLogout = viewModel::signOut,
         modifier = modifier,
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EnterCodeScreen(
     state: EnterCodeUiState,
     onDigitChanged: (Int, String) -> Unit,
     onAllDigitsEntered: (String) -> Unit,
     onConfirmTapped: () -> Unit,
+    onLogout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val focusRequesters = remember { List(6) { FocusRequester() } }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Text("Enter your student's code", style = MaterialTheme.typography.headlineSmall)
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text = "Ask your student to open the Invigilator app and share their 6-digit code.",
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-        )
-
-        Spacer(Modifier.height(32.dp))
-
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            state.digits.forEachIndexed { index, digit ->
-                OutlinedTextField(
-                    value = digit,
-                    onValueChange = { newVal ->
-                        val cleaned = newVal.filter { it.isDigit() }
-                        if (cleaned.length >= 6) {
-                            // Paste detected — fill all boxes
-                            onAllDigitsEntered(cleaned)
-                            focusRequesters.last().requestFocus()
-                        } else {
-                            val single = cleaned.take(1)
-                            onDigitChanged(index, single)
-                            if (single.isNotEmpty() && index < 5) {
-                                focusRequesters[index + 1].requestFocus()
-                            }
-                        }
-                    },
-                    modifier = Modifier
-                        .width(44.dp)
-                        .focusRequester(focusRequesters[index]),
-                    textStyle = MaterialTheme.typography.headlineSmall.copy(
-                        textAlign = TextAlign.Center,
-                    ),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                )
-            }
-        }
-
-        if (state.error != null) {
-            Spacer(Modifier.height(12.dp))
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {},
+                actions = { OnboardingLogoutMenu(onLogout = onLogout) },
+            )
+        },
+        modifier = modifier,
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text("Enter your student's code", style = MaterialTheme.typography.headlineSmall)
+            Spacer(Modifier.height(8.dp))
             Text(
-                text = state.error,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error,
+                text = "Ask your student to open the Invigilator app and share their 6-digit code.",
+                style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
             )
-        }
 
-        Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(32.dp))
 
-        Button(
-            onClick = onConfirmTapped,
-            enabled = state.isConfirmEnabled,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-        ) {
-            if (state.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-            } else {
-                Text("Confirm")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                state.digits.forEachIndexed { index, digit ->
+                    OutlinedTextField(
+                        value = digit,
+                        onValueChange = { newVal ->
+                            val cleaned = newVal.filter { it.isDigit() }
+                            if (cleaned.length >= 6) {
+                                // Paste detected — fill all boxes
+                                onAllDigitsEntered(cleaned)
+                                focusRequesters.last().requestFocus()
+                            } else {
+                                val single = cleaned.take(1)
+                                onDigitChanged(index, single)
+                                if (single.isNotEmpty() && index < 5) {
+                                    focusRequesters[index + 1].requestFocus()
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .width(44.dp)
+                            .focusRequester(focusRequesters[index]),
+                        textStyle = MaterialTheme.typography.headlineSmall.copy(
+                            textAlign = TextAlign.Center,
+                        ),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true,
+                    )
+                }
+            }
+
+            if (state.error != null) {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    text = state.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center,
+                )
+            }
+
+            Spacer(Modifier.height(32.dp))
+
+            Button(
+                onClick = onConfirmTapped,
+                enabled = state.isConfirmEnabled,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+            ) {
+                if (state.isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                } else {
+                    Text("Confirm")
+                }
             }
         }
     }
