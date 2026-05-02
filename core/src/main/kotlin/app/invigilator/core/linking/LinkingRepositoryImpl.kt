@@ -79,27 +79,27 @@ internal class LinkingRepositoryImpl @Inject constructor(
         )
     }.mapFailure { it.toLinkingError() }
 
-    override suspend fun createLinkedStudentRecord(
-        parentUid: String,
-        doc: LinkedStudentDoc,
-    ): Result<Unit> = runCatching {
-        firestore
-            .collection("users").document(parentUid)
-            .collection("linkedStudents").document(doc.studentUid)
-            .set(doc)
-            .await()
-    }.map { Unit }
+    override suspend fun completeLinking(studentUid: String, consentId: String): Result<Unit> =
+        runCatching {
+            functions
+                .getHttpsCallable("completeLinking")
+                .call(mapOf("studentUid" to studentUid, "consentId" to consentId))
+                .await()
+            Unit
+        }.mapFailure { it.toCompleteLinkingError() }
 
-    override suspend fun deleteLinkedStudentRecord(
-        parentUid: String,
-        studentUid: String,
-    ): Result<Unit> = runCatching {
-        firestore
-            .collection("users").document(parentUid)
-            .collection("linkedStudents").document(studentUid)
-            .delete()
-            .await()
-    }.map { Unit }
+    private fun Throwable.toCompleteLinkingError(): LinkingError {
+        val msg = message ?: ""
+        return when {
+            msg.contains("UNAUTHENTICATED", ignoreCase = true) -> LinkingError.NotSignedIn
+            msg.contains("INVALID_ARGUMENT", ignoreCase = true) -> LinkingError.BadRequest
+            msg.contains("FAILED_PRECONDITION", ignoreCase = true) &&
+                msg.contains("expired", ignoreCase = true) -> LinkingError.SessionExpired
+            msg.contains("ALREADY_EXISTS", ignoreCase = true) -> LinkingError.AlreadyLinked
+            msg.contains("PERMISSION_DENIED", ignoreCase = true) -> LinkingError.NotAuthorized
+            else -> LinkingError.Unknown(this)
+        }
+    }
 
     private fun Throwable.toLinkingError(): LinkingError {
         val msg = message ?: ""

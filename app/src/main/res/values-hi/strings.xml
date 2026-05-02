@@ -6,4 +6,7 @@
     <string name="action_cancel">रद्द करें</string>
     <string name="logout_confirm_title">लॉग आउट करें?</string>
     <string name="logout_confirm_onboarding_body">आपकी अब तक की प्रगति सहेजी जाएगी। जारी रखने के लिए उसी फ़ोन नंबर से वापस साइन इन करें।</string>
+    <string name="linking_error_session_expired">आपका लिंकिंग सत्र समाप्त हो गया है। कृपया छात्र से नया कोड माँगें और पुनः प्रयास करें।</string>
+    <string name="linking_error_already_linked">यह छात्र पहले से किसी अभिभावक से जुड़ा हुआ है। यदि यह गलत है, तो सहायता से संपर्क करें।</string>
+    <string name="linking_error_generic">लिंकिंग पूरी नहीं हो सकी। कृपया पुनः प्रयास करें।</string>
 </resources>

@@ -33,16 +33,9 @@ interface LinkingRepository {
     suspend fun claimCode(code: String): Result<ClaimResult>
 
     /**
-     * Creates the /users/{parentUid}/linkedStudents/{studentUid} document after parent consent.
+     * Calls the `completeLinking` Cloud Function. The function writes both the
+     * linkedStudents subcollection document and activates the student's account
+     * atomically with Admin SDK privileges.
      */
-    suspend fun createLinkedStudentRecord(
-        parentUid: String,
-        doc: app.invigilator.core.user.LinkedStudentDoc,
-    ): Result<Unit>
-
-    /**
-     * Deletes the /users/{parentUid}/linkedStudents/{studentUid} document.
-     * Used to roll back a partial linking if account activation fails.
-     */
-    suspend fun deleteLinkedStudentRecord(parentUid: String, studentUid: String): Result<Unit>
+    suspend fun completeLinking(studentUid: String, consentId: String): Result<Unit>
 }

@@ -6,4 +6,7 @@
     <string name="action_cancel">Cancel</string>
     <string name="logout_confirm_title">Log out?</string>
     <string name="logout_confirm_onboarding_body">Your progress so far will be saved. You can sign back in with the same phone number to continue.</string>
+    <string name="linking_error_session_expired">Your linking session has expired. Please ask the student for a new code and try again.</string>
+    <string name="linking_error_already_linked">This student is already linked to a parent. If this is wrong, contact support.</string>
+    <string name="linking_error_generic">Could not complete linking. Please try again.</string>
 </resources>

@@ -182,7 +182,7 @@ fun InvigilatorNavHost(
             val route = backStackEntry.toRoute<Route.Consent>()
 
             ConsentRoute(
-                onComplete = {
+                onComplete = { consentId ->
                     when (route.type) {
                         ConsentType.ADULT_STUDENT_SELF.firestoreValue -> {
                             navController.navigate(Route.StudentHome) {
@@ -199,6 +199,7 @@ fun InvigilatorNavHost(
                                 Route.ParentLinkingComplete(
                                     studentUid = route.studentUid,
                                     studentDisplayName = route.studentDisplayName,
+                                    consentId = consentId,
                                 )
                             ) { popUpTo(0) { inclusive = true } }
                         }

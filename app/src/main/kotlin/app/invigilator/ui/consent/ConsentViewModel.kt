@@ -40,6 +40,8 @@ data class ConsentUiState(
     val error: String? = null,
     /** true → the Route composable should navigate away */
     val isComplete: Boolean = false,
+    /** Set when isComplete = true; passed to onComplete so callers can forward the consent ID. */
+    val consentId: String? = null,
 ) {
     val canAgree: Boolean get() = hasScrolledToEnd && signature.isNotBlank() && !isLoading
 }
@@ -89,7 +91,7 @@ class ConsentViewModel @Inject constructor(
     }
 
     fun clearComplete() {
-        _uiState.update { it.copy(isComplete = false) }
+        _uiState.update { it.copy(isComplete = false, consentId = null) }
     }
 
     private fun loadConsentText() {
@@ -162,7 +164,7 @@ class ConsentViewModel @Inject constructor(
                         return@launch
                     }
                 }
-                _uiState.update { it.copy(isLoading = false, isComplete = true) }
+                _uiState.update { it.copy(isLoading = false, isComplete = true, consentId = consentId) }
             } else {
                 // Timeout — delete the incomplete doc so the user can retry
                 consentRepository.withdrawConsent(consentId, uid)

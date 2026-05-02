@@ -30,15 +30,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun ConsentRoute(
-    onComplete: () -> Unit,
+    onComplete: (consentId: String) -> Unit,
     viewModel: ConsentViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(state.isComplete) {
+    LaunchedEffect(state.isComplete, state.consentId) {
         if (state.isComplete) {
+            val id = state.consentId ?: return@LaunchedEffect
             viewModel.clearComplete()
-            onComplete()
+            onComplete(id)
         }
     }
 

@@ -31,10 +31,11 @@ sealed interface Route {
         val studentName: String,
         val studentDobMillis: Long,
     ) : Route
-    /** Executes the batch write (linkedStudents doc + activate student) after parent consent. */
+    /** Calls the completeLinking Cloud Function after parent consent. */
     @Serializable data class  ParentLinkingComplete(
         val studentUid: String,
         val studentDisplayName: String,
+        val consentId: String,
     ) : Route
 
     // ── Home ──────────────────────────────────────────────────────────────────

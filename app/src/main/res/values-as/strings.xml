@@ -6,4 +6,7 @@
     <string name="action_cancel">বাতিল কৰক</string>
     <string name="logout_confirm_title">লগ আউট কৰিবনে?</string>
     <string name="logout_confirm_onboarding_body">আপোনাৰ এতিয়ালৈকে অগ্ৰগতি সংৰক্ষণ কৰা হব। অব্যাহত ৰাখিবলৈ একেটা ফোন নম্বৰেৰে পুনৰ চাইন ইন কৰক।</string>
+    <string name="linking_error_session_expired">আপোনাৰ লিংকিং ছেছন মেয়াদোত্তীৰ্ণ হৈছে। অনুগ্ৰহ কৰি শিক্ষাৰ্থীৰ পৰা নতুন ক\'ড বিচাৰক আৰু পুনৰ চেষ্টা কৰক।</string>
+    <string name="linking_error_already_linked">এই শিক্ষাৰ্থী ইতিমধ্যে এজন অভিভাৱকৰ সৈতে সংযুক্ত। যদি এইটো ভুল, সমৰ্থনৰ সৈতে যোগাযোগ কৰক।</string>
+    <string name="linking_error_generic">সংযোগ সম্পূৰ্ণ কৰিব পৰা নগ\'ল। অনুগ্ৰহ কৰি পুনৰ চেষ্টা কৰক।</string>
 </resources>

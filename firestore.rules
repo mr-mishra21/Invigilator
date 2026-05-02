@@ -24,13 +24,11 @@ service cloud.firestore {
       allow delete: if false;  // soft-delete only, via Cloud Function
     }
 
-    // A parent can read their linked students subcollection
+    // A parent can read their linked students subcollection.
+    // Creates are only allowed via the completeLinking Cloud Function (Admin SDK bypasses rules).
     match /users/{parentUid}/linkedStudents/{studentUid} {
       allow read: if request.auth != null && request.auth.uid == parentUid;
-      allow create: if request.auth != null
-                    && request.auth.uid == parentUid
-                    // Must reference a real consent record
-                    && request.resource.data.consentRecordId is string;
+      allow create: if false;
       allow update, delete: if false;  // immutable; unlink via Cloud Function
     }
 
