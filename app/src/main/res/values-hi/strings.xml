@@ -9,4 +9,21 @@
     <string name="linking_error_session_expired">आपका लिंकिंग सत्र समाप्त हो गया है। कृपया छात्र से नया कोड माँगें और पुनः प्रयास करें।</string>
     <string name="linking_error_already_linked">यह छात्र पहले से किसी अभिभावक से जुड़ा हुआ है। यदि यह गलत है, तो सहायता से संपर्क करें।</string>
     <string name="linking_error_generic">लिंकिंग पूरी नहीं हो सकी। कृपया पुनः प्रयास करें।</string>
+    <string name="cd_navigate_back">वापस जाएं</string>
+    <string name="permissions_title">उपयोग एक्सेस आवश्यक है</string>
+    <string name="permissions_body">इनविजिलेटर को यह जानना जरूरी है कि आप कब ऐप बदलते हैं ताकि यह आपको केंद्रित रहने में मदद कर सके। नीचे दिए बटन पर टैप करें, सूची में इनविजिलेटर खोजें और उपयोग एक्सेस चालू करें।</string>
+    <string name="permissions_granted">अनुमति दी गई</string>
+    <string name="permissions_not_granted">अनुमति नहीं दी गई</string>
+    <string name="action_open_settings">सेटिंग खोलें</string>
+    <string name="action_continue">जारी रखें</string>
+    <string name="start_session_title">सत्र शुरू करें</string>
+    <string name="start_session_timed">समयबद्ध सत्र</string>
+    <string name="start_session_open">खुला-अंत</string>
+    <string name="duration_15">15 मिनट</string>
+    <string name="duration_25">25 मिनट</string>
+    <string name="duration_45">45 मिनट</string>
+    <string name="duration_60">60 मिनट</string>
+    <string name="duration_90">90 मिनट</string>
+    <string name="action_start">शुरू करें</string>
+    <string name="action_start_session">सत्र शुरू करें</string>
 </resources>

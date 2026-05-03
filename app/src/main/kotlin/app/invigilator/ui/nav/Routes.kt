@@ -38,6 +38,10 @@ sealed interface Route {
         val consentId: String,
     ) : Route
 
+    // ── Session ───────────────────────────────────────────────────────────────
+    @Serializable data object StartSession : Route
+    @Serializable data object Permissions : Route
+
     // ── Home ──────────────────────────────────────────────────────────────────
     @Serializable data object ParentHome : Route
     @Serializable data object StudentHome : Route

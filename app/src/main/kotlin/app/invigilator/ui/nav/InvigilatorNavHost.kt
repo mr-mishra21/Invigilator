@@ -1,8 +1,10 @@
 package app.invigilator.ui.nav
 
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -26,6 +28,10 @@ import app.invigilator.ui.onboarding.NameEntryRoute
 import app.invigilator.ui.onboarding.OnboardingEvent
 import app.invigilator.ui.onboarding.OnboardingViewModel
 import app.invigilator.ui.onboarding.RoleSelectRoute
+import app.invigilator.ui.session.PermissionsEvent
+import app.invigilator.ui.session.PermissionsRoute
+import app.invigilator.ui.session.PermissionsViewModel
+import app.invigilator.ui.session.StartSessionRoute
 import app.invigilator.ui.splash.SplashRoute
 
 @Composable
@@ -33,6 +39,8 @@ fun InvigilatorNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
+    val context = LocalContext.current
+
     NavHost(
         navController = navController,
         startDestination = Route.Splash,
@@ -304,6 +312,33 @@ fun InvigilatorNavHost(
                         popUpTo(0) { inclusive = true }
                     }
                 },
+                onStartSession = {
+                    navController.navigate(Route.StartSession)
+                },
+            )
+        }
+
+        // ── Session ───────────────────────────────────────────────────────────
+        composable<Route.StartSession> {
+            val permissionsVm: PermissionsViewModel = hiltViewModel()
+            StartSessionRoute(
+                onStart = {
+                    permissionsVm.onEvent(PermissionsEvent.Refresh)
+                    if (permissionsVm.state.value.hasPermission) {
+                        Toast.makeText(context, "Session would start (Phase 2)", Toast.LENGTH_SHORT).show()
+                        navController.popBackStack()
+                    } else {
+                        navController.navigate(Route.Permissions)
+                    }
+                },
+                onBack = { navController.popBackStack() },
+            )
+        }
+
+        composable<Route.Permissions> {
+            PermissionsRoute(
+                onContinue = { navController.popBackStack() },
+                onBack = { navController.popBackStack() },
             )
         }
     }

@@ -35,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun StudentHomeRoute(
     onLoggedOut: () -> Unit,
+    onStartSession: () -> Unit,
     viewModel: StudentHomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -44,6 +45,7 @@ fun StudentHomeRoute(
     StudentHomeScreen(
         state = state,
         onLogout = viewModel::signOut,
+        onStartSession = onStartSession,
     )
 }
 
@@ -52,6 +54,7 @@ fun StudentHomeRoute(
 fun StudentHomeScreen(
     state: StudentHomeUiState,
     onLogout: () -> Unit,
+    onStartSession: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -110,7 +113,7 @@ fun StudentHomeScreen(
                     Spacer(Modifier.height(8.dp))
                     Text("Not started yet.", style = MaterialTheme.typography.bodyMedium)
                     Spacer(Modifier.height(12.dp))
-                    Button(onClick = { /* Sprint 3 */ }, modifier = Modifier.fillMaxWidth()) {
+                    Button(onClick = onStartSession, modifier = Modifier.fillMaxWidth()) {
                         Text("Start session")
                     }
                 }

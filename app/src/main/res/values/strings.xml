@@ -9,4 +9,21 @@
     <string name="linking_error_session_expired">Your linking session has expired. Please ask the student for a new code and try again.</string>
     <string name="linking_error_already_linked">This student is already linked to a parent. If this is wrong, contact support.</string>
     <string name="linking_error_generic">Could not complete linking. Please try again.</string>
+    <string name="cd_navigate_back">Navigate back</string>
+    <string name="permissions_title">Usage access required</string>
+    <string name="permissions_body">Invigilator needs to know when you switch apps so it can help you stay focused. Tap the button below, find Invigilator in the list, and turn on usage access.</string>
+    <string name="permissions_granted">Permission granted</string>
+    <string name="permissions_not_granted">Permission not granted</string>
+    <string name="action_open_settings">Open settings</string>
+    <string name="action_continue">Continue</string>
+    <string name="start_session_title">Start session</string>
+    <string name="start_session_timed">Timed session</string>
+    <string name="start_session_open">Open-ended</string>
+    <string name="duration_15">15 min</string>
+    <string name="duration_25">25 min</string>
+    <string name="duration_45">45 min</string>
+    <string name="duration_60">60 min</string>
+    <string name="duration_90">90 min</string>
+    <string name="action_start">Start</string>
+    <string name="action_start_session">Start session</string>
 </resources>

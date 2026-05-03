@@ -9,4 +9,21 @@
     <string name="linking_error_session_expired">আপোনাৰ লিংকিং ছেছন মেয়াদোত্তীৰ্ণ হৈছে। অনুগ্ৰহ কৰি শিক্ষাৰ্থীৰ পৰা নতুন ক\'ড বিচাৰক আৰু পুনৰ চেষ্টা কৰক।</string>
     <string name="linking_error_already_linked">এই শিক্ষাৰ্থী ইতিমধ্যে এজন অভিভাৱকৰ সৈতে সংযুক্ত। যদি এইটো ভুল, সমৰ্থনৰ সৈতে যোগাযোগ কৰক।</string>
     <string name="linking_error_generic">সংযোগ সম্পূৰ্ণ কৰিব পৰা নগ\'ল। অনুগ্ৰহ কৰি পুনৰ চেষ্টা কৰক।</string>
+    <string name="cd_navigate_back">পিছলৈ যাওক</string>
+    <string name="permissions_title">ব্যৱহাৰ অ্যাক্সেছ প্ৰয়োজন</string>
+    <string name="permissions_body">ইনভিজিলেটৰে জানিব লাগিব যে আপুনি কেতিয়া এপ সলনি কৰে যাতে ই আপোনাক মনোযোগী হোৱাত সহায় কৰিব পাৰে। তলৰ বুটামত টেপ কৰক, তালিকাত ইনভিজিলেটৰ বিচাৰক, আৰু ব্যৱহাৰ অ্যাক্সেছ চালু কৰক।</string>
+    <string name="permissions_granted">অনুমতি প্ৰদান কৰা হৈছে</string>
+    <string name="permissions_not_granted">অনুমতি প্ৰদান কৰা হোৱা নাই</string>
+    <string name="action_open_settings">ছেটিংছ খোলক</string>
+    <string name="action_continue">অব্যাহত ৰাখক</string>
+    <string name="start_session_title">ছেছন আৰম্ভ কৰক</string>
+    <string name="start_session_timed">সময়সীমা ছেছন</string>
+    <string name="start_session_open">মুক্ত-অন্ত</string>
+    <string name="duration_15">১৫ মিনিট</string>
+    <string name="duration_25">২৫ মিনিট</string>
+    <string name="duration_45">৪৫ মিনিট</string>
+    <string name="duration_60">৬০ মিনিট</string>
+    <string name="duration_90">৯০ মিনিট</string>
+    <string name="action_start">আৰম্ভ</string>
+    <string name="action_start_session">ছেছন আৰম্ভ কৰক</string>
 </resources>
