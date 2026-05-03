@@ -26,4 +26,14 @@
     <string name="duration_90">90 मिनट</string>
     <string name="action_start">शुरू करें</string>
     <string name="action_start_session">सत्र शुरू करें</string>
+
+    <!-- Session active [DRAFT] -->
+    <string name="session_active_title">फोकस सत्र</string>
+    <string name="session_active_subtitle">ध्यान केंद्रित रहें। समाप्त होने पर End टैप करें।</string>
+    <string name="action_end_session">सत्र समाप्त करें</string>
+    <string name="notification_channel_session">सक्रिय सत्र</string>
+    <string name="notification_channel_session_desc">फोकस सत्र चलने के दौरान दिखाया जाता है</string>
+    <string name="notification_session_active_title">फोकस सत्र सक्रिय है</string>
+    <string name="notification_session_active_body">Invigilator पर वापस जाने के लिए टैप करें</string>
+    <string name="notification_action_end">सत्र समाप्त करें</string>
 </resources>

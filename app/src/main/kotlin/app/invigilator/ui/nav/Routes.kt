@@ -41,6 +41,7 @@ sealed interface Route {
     // ── Session ───────────────────────────────────────────────────────────────
     @Serializable data object StartSession : Route
     @Serializable data object Permissions : Route
+    @Serializable data object SessionActive : Route
 
     // ── Home ──────────────────────────────────────────────────────────────────
     @Serializable data object ParentHome : Route

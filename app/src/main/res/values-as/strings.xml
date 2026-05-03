@@ -26,4 +26,14 @@
     <string name="duration_90">৯০ মিনিট</string>
     <string name="action_start">আৰম্ভ</string>
     <string name="action_start_session">ছেছন আৰম্ভ কৰক</string>
+
+    <!-- Session active [DRAFT] -->
+    <string name="session_active_title">ফোকাছ ছেছন</string>
+    <string name="session_active_subtitle">মনোযোগী হৈ থাকক। শেষ হ\'লে End টেপ কৰক।</string>
+    <string name="action_end_session">ছেছন সমাপ্ত কৰক</string>
+    <string name="notification_channel_session">সক্ৰিয় ছেছন</string>
+    <string name="notification_channel_session_desc">ফোকাছ ছেছন চলি থকাৰ সময়ত দেখুওৱা হয়</string>
+    <string name="notification_session_active_title">ফোকাছ ছেছন সক্ৰিয়</string>
+    <string name="notification_session_active_body">Invigilator-লৈ উভতিবলৈ টেপ কৰক</string>
+    <string name="notification_action_end">ছেছন সমাপ্ত কৰক</string>
 </resources>

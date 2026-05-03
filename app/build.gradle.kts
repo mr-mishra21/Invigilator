@@ -72,6 +72,12 @@ android {
         compose = true
         buildConfig = true
     }
+
+    testOptions {
+        unitTests.all {
+            it.maxHeapSize = "2g"
+        }
+    }
 }
 
 dependencies {

@@ -6,6 +6,8 @@ import app.invigilator.core.consent.ConsentRepository
 import app.invigilator.core.consent.ConsentRepositoryImpl
 import app.invigilator.core.linking.LinkingRepository
 import app.invigilator.core.linking.LinkingRepositoryImpl
+import app.invigilator.core.session.SessionStateRepository
+import app.invigilator.core.session.SessionStateRepositoryImpl
 import app.invigilator.core.user.UserRepository
 import app.invigilator.core.user.UserRepositoryImpl
 import com.google.firebase.auth.FirebaseAuth
@@ -37,6 +39,10 @@ internal abstract class CoreModule {
     @Binds
     @Singleton
     abstract fun bindLinkingRepository(impl: LinkingRepositoryImpl): LinkingRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSessionStateRepository(impl: SessionStateRepositoryImpl): SessionStateRepository
 
     companion object {
 

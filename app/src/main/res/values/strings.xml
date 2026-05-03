@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Invigilator</string>
+    <string name="app_name" translatable="false">Invigilator</string>
     <string name="cd_more_options">More options</string>
     <string name="action_logout">Log out</string>
     <string name="action_cancel">Cancel</string>
@@ -26,4 +26,14 @@
     <string name="duration_90">90 min</string>
     <string name="action_start">Start</string>
     <string name="action_start_session">Start session</string>
+
+    <!-- Session active -->
+    <string name="session_active_title">Focus session</string>
+    <string name="session_active_subtitle">Stay focused. Tap end when done.</string>
+    <string name="action_end_session">End session</string>
+    <string name="notification_channel_session">Active session</string>
+    <string name="notification_channel_session_desc">Shown while a focus session is in progress</string>
+    <string name="notification_session_active_title">Focus session active</string>
+    <string name="notification_session_active_body">Tap to return to Invigilator</string>
+    <string name="notification_action_end">End session</string>
 </resources>

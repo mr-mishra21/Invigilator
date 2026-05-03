@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import app.invigilator.core.auth.ActivityHolder
+import app.invigilator.core.session.SessionStateRepository
 import app.invigilator.ui.nav.InvigilatorNavHost
 import androidx.compose.ui.Modifier
 import app.invigilator.ui.theme.InvigilatorTheme
@@ -18,6 +19,7 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
     @Inject lateinit var activityHolder: ActivityHolder
+    @Inject lateinit var sessionState: SessionStateRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,7 +28,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             InvigilatorTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { padding ->
-                    InvigilatorNavHost(modifier = Modifier.fillMaxSize().padding(padding))
+                    InvigilatorNavHost(
+                        sessionState = sessionState,
+                        modifier = Modifier.fillMaxSize().padding(padding),
+                    )
                 }
             }
         }

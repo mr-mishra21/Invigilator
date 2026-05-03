@@ -1,10 +1,16 @@
 package app.invigilator.ui.nav
 
-import android.widget.Toast
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -12,7 +18,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import app.invigilator.blocker.SessionMonitorService
 import app.invigilator.core.consent.ConsentType
+import app.invigilator.core.session.SessionStateRepository
 import app.invigilator.core.user.UserRole
 import app.invigilator.ui.auth.OtpEntryRoute
 import app.invigilator.ui.auth.PhoneEntryRoute
@@ -28,18 +36,24 @@ import app.invigilator.ui.onboarding.NameEntryRoute
 import app.invigilator.ui.onboarding.OnboardingEvent
 import app.invigilator.ui.onboarding.OnboardingViewModel
 import app.invigilator.ui.onboarding.RoleSelectRoute
-import app.invigilator.ui.session.PermissionsEvent
 import app.invigilator.ui.session.PermissionsRoute
 import app.invigilator.ui.session.PermissionsViewModel
+import app.invigilator.ui.session.SessionActiveRoute
 import app.invigilator.ui.session.StartSessionRoute
 import app.invigilator.ui.splash.SplashRoute
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun InvigilatorNavHost(
+    sessionState: SessionStateRepository,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
     val context = LocalContext.current
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { /* proceed regardless — notification is best-effort */ }
 
     NavHost(
         navController = navController,
@@ -322,11 +336,26 @@ fun InvigilatorNavHost(
         composable<Route.StartSession> {
             val permissionsVm: PermissionsViewModel = hiltViewModel()
             StartSessionRoute(
-                onStart = {
-                    permissionsVm.onEvent(PermissionsEvent.Refresh)
+                onStart = { sessionType ->
                     if (permissionsVm.state.value.hasPermission) {
-                        Toast.makeText(context, "Session would start (Phase 2)", Toast.LENGTH_SHORT).show()
-                        navController.popBackStack()
+                        val studentUid = FirebaseAuth.getInstance().currentUser?.uid
+                        if (studentUid != null) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                if (ContextCompat.checkSelfPermission(
+                                        context, Manifest.permission.POST_NOTIFICATIONS
+                                    ) != PackageManager.PERMISSION_GRANTED
+                                ) {
+                                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                }
+                            }
+                            sessionState.startSession(sessionType, studentUid)
+                            context.startForegroundService(
+                                Intent(context, SessionMonitorService::class.java)
+                            )
+                            navController.navigate(Route.SessionActive) {
+                                popUpTo(Route.StudentHome) { inclusive = false }
+                            }
+                        }
                     } else {
                         navController.navigate(Route.Permissions)
                     }
@@ -339,6 +368,17 @@ fun InvigilatorNavHost(
             PermissionsRoute(
                 onContinue = { navController.popBackStack() },
                 onBack = { navController.popBackStack() },
+            )
+        }
+
+        composable<Route.SessionActive> {
+            SessionActiveRoute(
+                onSessionEnded = {
+                    navController.navigate(Route.StudentHome) {
+                        popUpTo(navController.graph.id) { inclusive = false }
+                        launchSingleTop = true
+                    }
+                },
             )
         }
     }

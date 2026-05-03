@@ -26,4 +26,14 @@
     <string name="duration_90">৯০ মিনিট</string>
     <string name="action_start">শুরু করুন</string>
     <string name="action_start_session">সেশন শুরু করুন</string>
+
+    <!-- Session active [DRAFT] -->
+    <string name="session_active_title">ফোকাস সেশন</string>
+    <string name="session_active_subtitle">মনোযোগী থাকুন। শেষ হলে End চাপুন।</string>
+    <string name="action_end_session">সেশন শেষ করুন</string>
+    <string name="notification_channel_session">সক্রিয় সেশন</string>
+    <string name="notification_channel_session_desc">ফোকাস সেশন চলাকালীন দেখানো হয়</string>
+    <string name="notification_session_active_title">ফোকাস সেশন সক্রিয়</string>
+    <string name="notification_session_active_body">Invigilator-এ ফিরতে ট্যাপ করুন</string>
+    <string name="notification_action_end">সেশন শেষ করুন</string>
 </resources>
