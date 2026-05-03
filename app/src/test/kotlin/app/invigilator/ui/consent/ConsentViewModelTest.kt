@@ -11,6 +11,7 @@ import app.invigilator.util.MainDispatcherRule
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -38,11 +39,15 @@ class ConsentViewModelTest {
     private val authRepository: AuthRepository = mockk()
     private val userRepository: UserRepository = mockk()
 
-    private fun savedState(type: String = ConsentType.ADULT_STUDENT_SELF.firestoreValue) =
-        SavedStateHandle(mapOf("type" to type))
+    private fun savedState(
+        type: String = ConsentType.ADULT_STUDENT_SELF.firestoreValue,
+        studentUid: String = "",
+    ) = SavedStateHandle(mapOf("type" to type, "studentUid" to studentUid))
 
-    private fun viewModel(type: String = ConsentType.ADULT_STUDENT_SELF.firestoreValue) =
-        ConsentViewModel(consentRepository, authRepository, userRepository, savedState(type))
+    private fun viewModel(
+        type: String = ConsentType.ADULT_STUDENT_SELF.firestoreValue,
+        studentUid: String = "",
+    ) = ConsentViewModel(consentRepository, authRepository, userRepository, savedState(type, studentUid))
 
     private fun stubText(type: ConsentType = ConsentType.ADULT_STUDENT_SELF) {
         every {
@@ -143,6 +148,29 @@ class ConsentViewModelTest {
         assertNotNull(vm.uiState.value.error)
         assertFalse(vm.uiState.value.isLoading)
         assertFalse(vm.uiState.value.isComplete)
+    }
+
+    @Test
+    fun `ParentForMinorConsent records student uid as subjectUid, not parent uid`() = runTest {
+        every {
+            consentRepository.getConsentText(ConsentType.PARENT_FOR_MINOR, any())
+        } returns ConsentTextResult(text = "Parent consent text", hash = "hash-pfm")
+        every { authRepository.currentUserId } returns "uid-parent"
+
+        val docSlot = slot<ConsentDoc>()
+        coEvery { consentRepository.recordConsent(capture(docSlot)) } returns Result.success("consent-pfm")
+        every { consentRepository.awaitServerTimestamp("consent-pfm") } returns flowOf(true)
+
+        val vm = viewModel(
+            type = ConsentType.PARENT_FOR_MINOR.firestoreValue,
+            studentUid = "uid-student",
+        )
+        vm.onEvent(ConsentEvent.ScrolledToEnd)
+        vm.onEvent(ConsentEvent.SignatureChanged("Parent Name"))
+        vm.onEvent(ConsentEvent.AgreedTapped)
+
+        assertEquals("uid-parent", docSlot.captured.consenterUid)
+        assertEquals("uid-student", docSlot.captured.subjectUid)
     }
 
     @Test

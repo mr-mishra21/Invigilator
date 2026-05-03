@@ -61,6 +61,8 @@ class ConsentViewModel @Inject constructor(
     private val consentType: ConsentType = checkNotNull(ConsentType.fromFirestore(consentTypeStr)) {
         "Unknown consent type: $consentTypeStr"
     }
+    // For PARENT_FOR_MINOR: the student being consented about. Null/blank for self-consent types.
+    private val subjectUid: String? = savedStateHandle.get<String>("studentUid")?.ifBlank { null }
 
     private val _uiState = MutableStateFlow(
         ConsentUiState(
@@ -126,7 +128,7 @@ class ConsentViewModel @Inject constructor(
                 consentLanguage = state.language,
                 consenterUid = uid,
                 consenterRole = "",        // resolved server-side from user doc
-                subjectUid = uid,          // self-consent; parent-for-minor overrides in Part 4
+                subjectUid = subjectUid ?: uid,
                 signatureText = state.signature.trim(),
                 deviceFingerprint = "",    // TODO Sprint 3: populate androidId-derived hash
             )
