@@ -51,6 +51,21 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Session summaries — written by student, readable by student and linked parents
+    match /users/{studentUid}/sessions/{sessionId} {
+      // Student writes their own session docs.
+      allow create: if request.auth != null && request.auth.uid == studentUid;
+
+      // No edits or deletes — sessions are immutable history.
+      allow update, delete: if false;
+
+      // Student reads own. Linked parents read.
+      allow read: if request.auth != null && (
+        request.auth.uid == studentUid ||
+        isLinkedParentOf(request.auth.uid, studentUid)
+      );
+    }
+
     // Linking codes — students create, parents read+claim, server cleans up
     match /linkingCodes/{code} {
       allow read: if request.auth != null;  // parent reads to validate

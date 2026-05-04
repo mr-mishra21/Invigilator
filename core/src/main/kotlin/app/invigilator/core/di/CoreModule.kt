@@ -10,6 +10,8 @@ import app.invigilator.core.session.SessionStateRepository
 import app.invigilator.core.session.SessionStateRepositoryImpl
 import app.invigilator.core.session.SessionStatsRepository
 import app.invigilator.core.session.SessionStatsRepositoryImpl
+import app.invigilator.core.session.SessionSummaryRepository
+import app.invigilator.core.session.SessionSummaryRepositoryImpl
 import app.invigilator.core.user.UserRepository
 import app.invigilator.core.user.UserRepositoryImpl
 import com.google.firebase.auth.FirebaseAuth
@@ -51,6 +53,12 @@ internal abstract class CoreModule {
     abstract fun bindSessionStatsRepository(
         impl: SessionStatsRepositoryImpl
     ): SessionStatsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSessionSummaryRepository(
+        impl: SessionSummaryRepositoryImpl
+    ): SessionSummaryRepository
 
     companion object {
 

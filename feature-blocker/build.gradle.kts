@@ -44,6 +44,10 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
+    // ── Firebase (Timestamp used in session doc building) ─────────────────────
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.firestore)
+
     // ── Coroutines ────────────────────────────────────────────────────────────
     implementation(libs.kotlinx.coroutines.android)
 

@@ -12,14 +12,20 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import app.invigilator.core.session.ActiveSession
 import app.invigilator.core.session.AppCategory
 import app.invigilator.core.session.DistractionClassifier
 import app.invigilator.core.session.DistractionEvent
+import app.invigilator.core.session.DistractionRecord
+import app.invigilator.core.session.SessionDoc
 import app.invigilator.core.session.SessionEndReason
 import app.invigilator.core.session.SessionStateRepository
+import app.invigilator.core.session.SessionStats
 import app.invigilator.core.session.SessionStatsRepository
+import app.invigilator.core.session.SessionSummaryRepository
 import app.invigilator.core.session.SessionType
 import app.invigilator.feature.blocker.R
+import com.google.firebase.Timestamp
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,6 +44,7 @@ class SessionMonitorService : Service() {
     @Inject lateinit var sessionState: SessionStateRepository
     @Inject lateinit var classifier: DistractionClassifier
     @Inject lateinit var sessionStats: SessionStatsRepository
+    @Inject lateinit var sessionSummaryRepo: SessionSummaryRepository
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var monitorJob: Job? = null
@@ -121,7 +128,7 @@ class SessionMonitorService : Service() {
 
         if (elapsedMs >= durationMs) {
             Timber.d("SessionMonitor: timer expired (${type.durationMinutes}min)")
-            timerExpired()
+            endSession(SessionEndReason.TIMER_EXPIRED)
         }
     }
 
@@ -151,23 +158,64 @@ class SessionMonitorService : Service() {
         }
     }
 
-    private fun stopMonitoring() {
-        finalizePreviousApp(System.currentTimeMillis())
+    private fun stopMonitoring() = endSession(SessionEndReason.USER_ENDED)
+
+    private fun endSession(reason: SessionEndReason) {
+        val now = System.currentTimeMillis()
+        finalizePreviousApp(now)
+
+        // Capture state BEFORE clearing
+        val active: ActiveSession? = sessionState.activeSession.value
+        val stats: SessionStats = sessionStats.stats.value
+
+        // Write to Firestore (best-effort, doesn't block)
+        if (active != null) {
+            val doc = buildSessionDoc(active, stats, now, reason)
+            sessionSummaryRepo.saveSession(doc)
+        }
+
+        // Now clear local state
         monitorJob?.cancel()
-        sessionState.endSession(SessionEndReason.USER_ENDED)
+        sessionState.endSession(reason)
         sessionStats.reset()
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
-        Timber.d("SessionMonitor: stopped (user ended)")
+        Timber.d("SessionMonitor: stopped ($reason)")
     }
 
-    private fun timerExpired() {
-        finalizePreviousApp(System.currentTimeMillis())
-        monitorJob?.cancel()
-        sessionState.endSession(SessionEndReason.TIMER_EXPIRED)
-        sessionStats.reset()
-        stopForeground(STOP_FOREGROUND_REMOVE)
-        stopSelf()
+    private fun buildSessionDoc(
+        active: ActiveSession,
+        stats: SessionStats,
+        endedAtMillis: Long,
+        reason: SessionEndReason,
+    ): SessionDoc {
+        val durationSeconds = (endedAtMillis - active.startedAtMillis) / 1000
+        val plannedSeconds = when (val t = active.sessionType) {
+            is SessionType.Timed -> t.durationMinutes * 60L
+            SessionType.OpenEnded -> 0L
+        }
+        val typeString = when (active.sessionType) {
+            is SessionType.Timed -> "TIMED"
+            SessionType.OpenEnded -> "OPEN_ENDED"
+        }
+        return SessionDoc(
+            sessionId = active.sessionId,
+            studentUid = active.studentUid,
+            startedAt = Timestamp(active.startedAtMillis / 1000, 0),
+            endedAt = Timestamp(endedAtMillis / 1000, 0),
+            durationSeconds = durationSeconds,
+            plannedDurationSeconds = plannedSeconds,
+            sessionType = typeString,
+            endReason = reason.name,
+            distractionCount = stats.distractionCount,
+            distractions = stats.distractionEvents.map {
+                DistractionRecord(
+                    packageName = it.packageName,
+                    category = it.category.name,
+                    dwellSeconds = it.dwellSeconds,
+                )
+            },
+        )
     }
 
     private fun buildNotification(): Notification {
