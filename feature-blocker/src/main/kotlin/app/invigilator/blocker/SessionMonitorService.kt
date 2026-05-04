@@ -12,7 +12,11 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import app.invigilator.core.session.AppCategory
+import app.invigilator.core.session.DistractionClassifier
+import app.invigilator.core.session.DistractionEvent
 import app.invigilator.core.session.SessionStateRepository
+import app.invigilator.core.session.SessionStatsRepository
 import app.invigilator.feature.blocker.R
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -30,18 +34,24 @@ import javax.inject.Inject
 class SessionMonitorService : Service() {
 
     @Inject lateinit var sessionState: SessionStateRepository
+    @Inject lateinit var classifier: DistractionClassifier
+    @Inject lateinit var sessionStats: SessionStatsRepository
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var monitorJob: Job? = null
-    private var lastDetectedPackage: String? = null
 
     private lateinit var usageStatsManager: UsageStatsManager
     private lateinit var notificationManager: NotificationManager
+
+    private var currentApp: String? = null
+    private var currentAppCategory: AppCategory = AppCategory.UNKNOWN
+    private var currentAppEnteredAt: Long = 0L
 
     companion object {
         private const val NOTIFICATION_ID = 1001
         private const val CHANNEL_ID = "session_monitor"
         private const val POLL_INTERVAL_MS = 2000L
+        private const val DISTRACTION_DWELL_THRESHOLD_MS = 30_000L
         const val ACTION_STOP = "app.invigilator.action.STOP_SESSION"
     }
 
@@ -63,6 +73,8 @@ class SessionMonitorService : Service() {
     }
 
     private fun startMonitoring() {
+        sessionStats.reset()
+        currentApp = null
         monitorJob?.cancel()
         monitorJob = scope.launch {
             while (isActive) {
@@ -84,15 +96,49 @@ class SessionMonitorService : Service() {
                 lastEventPackage = event.packageName
             }
         }
-        if (lastEventPackage != null && lastEventPackage != lastDetectedPackage) {
-            lastDetectedPackage = lastEventPackage
-            Timber.d("SessionMonitor: foreground app changed to $lastEventPackage")
+
+        if (lastEventPackage != null && lastEventPackage != currentApp) {
+            finalizePreviousApp(now)
+
+            currentApp = lastEventPackage
+            currentAppCategory = classifier.classify(lastEventPackage)
+            currentAppEnteredAt = now
+
+            Timber.d("SessionMonitor: foreground app -> $lastEventPackage ($currentAppCategory)")
+        }
+    }
+
+    private fun finalizePreviousApp(exitedAt: Long) {
+        val previous = currentApp ?: return
+        val dwellMs = exitedAt - currentAppEnteredAt
+        val dwellSeconds = dwellMs / 1000
+
+        val countsAsDistraction = (
+            currentAppCategory == AppCategory.DISTRACTING ||
+            currentAppCategory == AppCategory.UNKNOWN
+        ) && dwellMs >= DISTRACTION_DWELL_THRESHOLD_MS
+
+        if (countsAsDistraction) {
+            sessionStats.recordDistractionEvent(
+                DistractionEvent(
+                    packageName = previous,
+                    category = currentAppCategory,
+                    enteredAtMillis = currentAppEnteredAt,
+                    exitedAtMillis = exitedAt,
+                    dwellSeconds = dwellSeconds,
+                )
+            )
+            Timber.d("SessionMonitor: distraction recorded — $previous ($currentAppCategory) for ${dwellSeconds}s")
+        } else if (currentAppCategory == AppCategory.DISTRACTING || currentAppCategory == AppCategory.UNKNOWN) {
+            Timber.d("SessionMonitor: brief check (not counted) — $previous for ${dwellSeconds}s")
         }
     }
 
     private fun stopMonitoring() {
+        finalizePreviousApp(System.currentTimeMillis())
         monitorJob?.cancel()
         sessionState.endSession()
+        sessionStats.reset()
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
         Timber.d("SessionMonitor: stopped")
