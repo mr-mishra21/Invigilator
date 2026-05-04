@@ -1,9 +1,9 @@
 package app.invigilator.core.session
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Test
 
@@ -33,7 +33,7 @@ class SessionStateRepositoryImplTest {
     @Test
     fun endSession_clearsActiveSession() {
         repository.startSession(SessionType.OpenEnded, "student-456")
-        repository.endSession()
+        repository.endSession(SessionEndReason.USER_ENDED)
 
         assertNull(repository.activeSession.value)
     }
@@ -60,5 +60,41 @@ class SessionStateRepositoryImplTest {
         val id2 = repository.activeSession.value!!.sessionId
 
         assertNotEquals(id1, id2)
+    }
+
+    @Test
+    fun endSession_userEnded_sets_lastEndReason() {
+        repository.startSession(SessionType.OpenEnded, "student-a")
+        repository.endSession(SessionEndReason.USER_ENDED)
+
+        assertEquals(SessionEndReason.USER_ENDED, repository.lastEndReason.value)
+    }
+
+    @Test
+    fun endSession_timerExpired_sets_lastEndReason() {
+        repository.startSession(SessionType.Timed(25), "student-b")
+        repository.endSession(SessionEndReason.TIMER_EXPIRED)
+
+        assertEquals(SessionEndReason.TIMER_EXPIRED, repository.lastEndReason.value)
+    }
+
+    @Test
+    fun startSession_clears_lastEndReason() {
+        repository.startSession(SessionType.OpenEnded, "student-a")
+        repository.endSession(SessionEndReason.USER_ENDED)
+
+        repository.startSession(SessionType.OpenEnded, "student-a")
+
+        assertNull(repository.lastEndReason.value)
+    }
+
+    @Test
+    fun clearLastEndReason_sets_to_null() {
+        repository.startSession(SessionType.OpenEnded, "student-a")
+        repository.endSession(SessionEndReason.TIMER_EXPIRED)
+
+        repository.clearLastEndReason()
+
+        assertNull(repository.lastEndReason.value)
     }
 }

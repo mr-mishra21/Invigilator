@@ -15,8 +15,10 @@ import androidx.core.app.NotificationCompat
 import app.invigilator.core.session.AppCategory
 import app.invigilator.core.session.DistractionClassifier
 import app.invigilator.core.session.DistractionEvent
+import app.invigilator.core.session.SessionEndReason
 import app.invigilator.core.session.SessionStateRepository
 import app.invigilator.core.session.SessionStatsRepository
+import app.invigilator.core.session.SessionType
 import app.invigilator.feature.blocker.R
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -79,6 +81,7 @@ class SessionMonitorService : Service() {
         monitorJob = scope.launch {
             while (isActive) {
                 detectForegroundApp()
+                checkTimerExpiry()
                 delay(POLL_INTERVAL_MS)
             }
         }
@@ -105,6 +108,20 @@ class SessionMonitorService : Service() {
             currentAppEnteredAt = now
 
             Timber.d("SessionMonitor: foreground app -> $lastEventPackage ($currentAppCategory)")
+        }
+    }
+
+    private fun checkTimerExpiry() {
+        val active = sessionState.activeSession.value ?: return
+        val type = active.sessionType
+        if (type !is SessionType.Timed) return
+
+        val elapsedMs = System.currentTimeMillis() - active.startedAtMillis
+        val durationMs = type.durationMinutes * 60_000L
+
+        if (elapsedMs >= durationMs) {
+            Timber.d("SessionMonitor: timer expired (${type.durationMinutes}min)")
+            timerExpired()
         }
     }
 
@@ -137,11 +154,20 @@ class SessionMonitorService : Service() {
     private fun stopMonitoring() {
         finalizePreviousApp(System.currentTimeMillis())
         monitorJob?.cancel()
-        sessionState.endSession()
+        sessionState.endSession(SessionEndReason.USER_ENDED)
         sessionStats.reset()
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
-        Timber.d("SessionMonitor: stopped")
+        Timber.d("SessionMonitor: stopped (user ended)")
+    }
+
+    private fun timerExpired() {
+        finalizePreviousApp(System.currentTimeMillis())
+        monitorJob?.cancel()
+        sessionState.endSession(SessionEndReason.TIMER_EXPIRED)
+        sessionStats.reset()
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
     }
 
     private fun buildNotification(): Notification {
