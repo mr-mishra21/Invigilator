@@ -57,6 +57,15 @@ class DistractionClassifier @Inject constructor() {
             "com.android.messaging",          // Stock SMS
             "com.google.android.apps.messaging",
             "com.android.emergency",
+            // Launchers (common across Indian Android phones)
+            "com.google.android.apps.nexuslauncher",   // Pixel
+            "com.sec.android.app.launcher",             // Samsung
+            "com.miui.home",                            // Xiaomi MIUI
+            "com.realme.launcher",                      // Realme
+            "com.oneplus.launcher",                     // OnePlus
+            "com.oppo.launcher",                        // Oppo
+            "com.vivo.launcher",                        // Vivo
+            "com.transsion.hilauncher",                 // Tecno / Infinix
         )
 
         val DISTRACTING_APPS = setOf(
