@@ -37,6 +37,13 @@
     <string name="notification_session_active_body">Invigilator-লৈ উভতিবলৈ টেপ কৰক</string>
     <string name="notification_action_end">ছেছন সমাপ্ত কৰক</string>
 
+    <!-- Welcome [DRAFT] -->
+    <string name="welcome_title">[DRAFT] Invigilator-লৈ আপোনাক স্বাগতম</string>
+    <string name="welcome_subtitle">[DRAFT] মনোযোগী হৈ থাকক। স্মাৰ্টভাৱে পঢ়ক।</string>
+    <string name="welcome_create_account">[DRAFT] একাউণ্ট তৈয়াৰ কৰক</string>
+    <string name="welcome_sign_in">[DRAFT] মোৰ এটা একাউণ্ট আছে</string>
+    <string name="sign_in_unknown_number">[DRAFT] আমি এই নম্বৰটো চিনি নাপাওঁ। পৰিবৰ্তে একাউণ্ট তৈয়াৰ কৰিবলৈ চেষ্টা কৰক।</string>
+
     <!-- Celebration [DRAFT] -->
     <string name="celebration_done">%d-মিনিটৰ ফোকাছ ছেছন সম্পন্ন!</string>
     <string name="celebration_subtitle">মনোযোগী হৈ থকাৰ বাবে চাবাছ।</string>

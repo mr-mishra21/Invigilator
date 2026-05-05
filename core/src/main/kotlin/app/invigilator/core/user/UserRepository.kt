@@ -6,6 +6,9 @@ interface UserRepository {
     /** Creates the /users/{uid} document on first sign-in. */
     suspend fun createUser(user: UserDoc): Result<Unit>
 
+    /** Returns true if a user document exists at /users/{uid}. */
+    suspend fun userDocExists(uid: String): Result<Boolean>
+
     /** Returns the current user doc, or null if not found. */
     suspend fun getUser(uid: String): Result<UserDoc?>
 

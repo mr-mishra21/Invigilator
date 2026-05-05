@@ -28,6 +28,11 @@ internal class UserRepositoryImpl @Inject constructor(
         userRef(user.uid).set(user.copy(phoneNumber = phoneNumber)).await()
     }.map { Unit }
 
+    override suspend fun userDocExists(uid: String): Result<Boolean> = runCatching {
+        val snap = userRef(uid).get().await()
+        snap.exists()
+    }
+
     override suspend fun getUser(uid: String): Result<UserDoc?> = runCatching {
         val snap = userRef(uid).get().await()
         snap.toObject(UserDoc::class.java)

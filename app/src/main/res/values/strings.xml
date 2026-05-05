@@ -37,6 +37,13 @@
     <string name="notification_session_active_body">Tap to return to Invigilator</string>
     <string name="notification_action_end">End session</string>
 
+    <!-- Welcome -->
+    <string name="welcome_title">Welcome to Invigilator</string>
+    <string name="welcome_subtitle">Stay focused. Study smarter.</string>
+    <string name="welcome_create_account">Create an account</string>
+    <string name="welcome_sign_in">I have an account</string>
+    <string name="sign_in_unknown_number">We don\'t recognize this number. Try creating an account instead.</string>
+
     <!-- Celebration -->
     <string name="celebration_done">%d-minute focus session done!</string>
     <string name="celebration_subtitle">Great work staying focused.</string>

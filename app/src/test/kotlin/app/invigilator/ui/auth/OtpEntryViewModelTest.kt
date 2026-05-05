@@ -1,9 +1,13 @@
 package app.invigilator.ui.auth
 
 import androidx.lifecycle.SavedStateHandle
-import app.cash.turbine.test
 import app.invigilator.core.auth.AuthError
 import app.invigilator.core.auth.AuthRepository
+import app.invigilator.core.user.AccountStatus
+import app.invigilator.core.user.UserDoc
+import app.invigilator.core.user.UserRepository
+import app.invigilator.core.user.UserRole
+import app.invigilator.ui.nav.AuthFlow
 import app.invigilator.util.MainDispatcherRule
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -24,12 +28,14 @@ class OtpEntryViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val authRepository: AuthRepository = mockk()
+    private val userRepository: UserRepository = mockk()
 
-    private fun savedState() = SavedStateHandle(
-        mapOf("role" to "student", "phone" to "+919876543210")
+    private fun savedState(flow: AuthFlow = AuthFlow.NEW_USER) = SavedStateHandle(
+        mapOf("flow" to flow.name, "phoneE164" to "+919876543210")
     )
 
-    private fun viewModel() = OtpEntryViewModel(authRepository, savedState())
+    private fun viewModel(flow: AuthFlow = AuthFlow.NEW_USER) =
+        OtpEntryViewModel(authRepository, userRepository, savedState(flow))
 
     @Test
     fun `otp changed updates state`() = runTest {
@@ -46,15 +52,6 @@ class OtpEntryViewModelTest {
         vm.onEvent(OtpEntryEvent.Submit)
         vm.onEvent(OtpEntryEvent.OtpChanged("654321"))
         assertNull(vm.uiState.value.error)
-    }
-
-    @Test
-    fun `successful verification sets verifiedUid`() = runTest {
-        coEvery { authRepository.verifyOtp("123456") } returns Result.success("uid-abc")
-        val vm = viewModel()
-        vm.onEvent(OtpEntryEvent.OtpChanged("123456"))
-        vm.onEvent(OtpEntryEvent.Submit)
-        assertEquals("uid-abc", vm.uiState.value.verifiedUid)
     }
 
     @Test
@@ -87,20 +84,66 @@ class OtpEntryViewModelTest {
 
     @Test
     fun `submit ignored when otp shorter than 6 digits`() = runTest {
-        coEvery { authRepository.verifyOtp(any()) } returns Result.success("uid")
         val vm = viewModel()
         vm.onEvent(OtpEntryEvent.OtpChanged("123"))
         vm.onEvent(OtpEntryEvent.Submit)
-        assertNull(vm.uiState.value.verifiedUid)
+        assertNull(vm.uiState.value.nextDestination)
+    }
+
+    // ── New-user flow ──────────────────────────────────────────────────────────
+
+    @Test
+    fun `new_user flow routes to ProceedToCreateUser after otp success`() = runTest {
+        coEvery { authRepository.verifyOtp("123456") } returns Result.success("uid-abc")
+        val vm = viewModel(AuthFlow.NEW_USER)
+        vm.onEvent(OtpEntryEvent.OtpChanged("123456"))
+        vm.onEvent(OtpEntryEvent.Submit)
+        assertEquals(OtpDestination.ProceedToCreateUser, vm.uiState.value.nextDestination)
+    }
+
+    // ── Sign-in flow ───────────────────────────────────────────────────────────
+
+    @Test
+    fun `sign_in flow with active user routes to GoToHome`() = runTest {
+        val userDoc = UserDoc(
+            uid = "uid-abc",
+            role = UserRole.STUDENT.firestoreValue,
+            accountStatus = AccountStatus.ACTIVE.firestoreValue,
+        )
+        coEvery { authRepository.verifyOtp("123456") } returns Result.success("uid-abc")
+        coEvery { userRepository.getUser("uid-abc") } returns Result.success(userDoc)
+        val vm = viewModel(AuthFlow.SIGN_IN)
+        vm.onEvent(OtpEntryEvent.OtpChanged("123456"))
+        vm.onEvent(OtpEntryEvent.Submit)
+        val dest = vm.uiState.value.nextDestination
+        assertTrue(dest is OtpDestination.GoToHome)
+        assertEquals(UserRole.STUDENT, (dest as OtpDestination.GoToHome).role)
     }
 
     @Test
-    fun `clearNavigationFlag resets verifiedUid`() = runTest {
+    fun `sign_in flow with pending_consent user routes to ResumeConsent`() = runTest {
+        val userDoc = UserDoc(
+            uid = "uid-abc",
+            role = UserRole.STUDENT.firestoreValue,
+            accountStatus = AccountStatus.PENDING_CONSENT.firestoreValue,
+        )
         coEvery { authRepository.verifyOtp("123456") } returns Result.success("uid-abc")
-        val vm = viewModel()
+        coEvery { userRepository.getUser("uid-abc") } returns Result.success(userDoc)
+        val vm = viewModel(AuthFlow.SIGN_IN)
         vm.onEvent(OtpEntryEvent.OtpChanged("123456"))
         vm.onEvent(OtpEntryEvent.Submit)
-        vm.clearNavigationFlag()
-        assertNull(vm.uiState.value.verifiedUid)
+        assertTrue(vm.uiState.value.nextDestination is OtpDestination.ResumeConsent)
+    }
+
+    @Test
+    fun `sign_in flow with no user doc signs out and shows error`() = runTest {
+        coEvery { authRepository.verifyOtp("123456") } returns Result.success("uid-abc")
+        coEvery { userRepository.getUser("uid-abc") } returns Result.success(null)
+        coEvery { authRepository.signOut() } returns Result.success(Unit)
+        val vm = viewModel(AuthFlow.SIGN_IN)
+        vm.onEvent(OtpEntryEvent.OtpChanged("123456"))
+        vm.onEvent(OtpEntryEvent.Submit)
+        assertEquals(OtpDestination.UnknownNumber, vm.uiState.value.nextDestination)
+        assertNotNull(vm.uiState.value.error)
     }
 }

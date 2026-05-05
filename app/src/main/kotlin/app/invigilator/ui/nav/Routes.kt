@@ -2,17 +2,23 @@ package app.invigilator.ui.nav
 
 import kotlinx.serialization.Serializable
 
+enum class AuthFlow {
+    SIGN_IN,
+    NEW_USER,
+}
+
 sealed interface Route {
 
     // ── Top-level ─────────────────────────────────────────────────────────────
     @Serializable data object Splash : Route
+    @Serializable data object Welcome : Route
 
     // ── Onboarding graph (nested — OnboardingViewModel is scoped here) ────────
     @Serializable data object OnboardingGraph : Route
     @Serializable data object RoleSelect : Route
     @Serializable data class  DobEntry(val role: String) : Route
-    @Serializable data class  PhoneEntry(val role: String) : Route
-    @Serializable data class  OtpEntry(val role: String, val phone: String) : Route
+    @Serializable data class  PhoneEntry(val flow: AuthFlow) : Route
+    @Serializable data class  OtpEntry(val flow: AuthFlow, val phoneE164: String) : Route
     @Serializable data object NameEntry : Route
 
     // ── Post-onboarding ───────────────────────────────────────────────────────

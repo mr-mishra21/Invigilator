@@ -33,9 +33,9 @@ import app.invigilator.ui.linking.LinkingCompletionRoute
 import app.invigilator.ui.linking.StudentShareCodeRoute
 import app.invigilator.ui.onboarding.DobEntryRoute
 import app.invigilator.ui.onboarding.NameEntryRoute
-import app.invigilator.ui.onboarding.OnboardingEvent
 import app.invigilator.ui.onboarding.OnboardingViewModel
 import app.invigilator.ui.onboarding.RoleSelectRoute
+import app.invigilator.ui.onboarding.WelcomeRoute
 import app.invigilator.ui.session.PermissionsRoute
 import app.invigilator.ui.session.PermissionsViewModel
 import app.invigilator.ui.session.CelebrationScreen
@@ -66,7 +66,7 @@ fun InvigilatorNavHost(
         composable<Route.Splash> {
             SplashRoute(
                 onNavigateToOnboarding = {
-                    navController.navigate(Route.OnboardingGraph) {
+                    navController.navigate(Route.Welcome) {
                         popUpTo(Route.Splash) { inclusive = true }
                     }
                 },
@@ -102,6 +102,18 @@ fun InvigilatorNavHost(
             )
         }
 
+        // ── Welcome ───────────────────────────────────────────────────────────
+        composable<Route.Welcome> {
+            WelcomeRoute(
+                onSignIn = {
+                    navController.navigate(Route.PhoneEntry(flow = AuthFlow.SIGN_IN))
+                },
+                onCreateAccount = {
+                    navController.navigate(Route.OnboardingGraph)
+                },
+            )
+        }
+
         // ── Onboarding graph (OnboardingViewModel is scoped to this graph) ───
         navigation<Route.OnboardingGraph>(startDestination = Route.RoleSelect) {
 
@@ -116,7 +128,7 @@ fun InvigilatorNavHost(
                         if (role == UserRole.STUDENT.firestoreValue) {
                             navController.navigate(Route.DobEntry(role))
                         } else {
-                            navController.navigate(Route.PhoneEntry(role))
+                            navController.navigate(Route.PhoneEntry(AuthFlow.NEW_USER))
                         }
                     },
                     onboardingViewModel = onboardingVm,
@@ -133,40 +145,9 @@ fun InvigilatorNavHost(
                 DobEntryRoute(
                     role = route.role,
                     onDobConfirmed = {
-                        navController.navigate(Route.PhoneEntry(route.role))
+                        navController.navigate(Route.PhoneEntry(AuthFlow.NEW_USER))
                     },
                     onboardingViewModel = onboardingVm,
-                )
-            }
-
-            composable<Route.PhoneEntry> { backStackEntry ->
-                val route = backStackEntry.toRoute<Route.PhoneEntry>()
-
-                PhoneEntryRoute(
-                    role = route.role,
-                    onOtpSent = { normalizedPhone ->
-                        navController.navigate(Route.OtpEntry(route.role, normalizedPhone))
-                    },
-                )
-            }
-
-            composable<Route.OtpEntry> { backStackEntry ->
-                val route = backStackEntry.toRoute<Route.OtpEntry>()
-                val parentEntry = remember(backStackEntry) {
-                    navController.getBackStackEntry<Route.OnboardingGraph>()
-                }
-                val onboardingVm: OnboardingViewModel = hiltViewModel(parentEntry)
-
-                OtpEntryRoute(
-                    role = route.role,
-                    phone = route.phone,
-                    onVerified = { uid ->
-                        onboardingVm.onEvent(OnboardingEvent.UidReceived(uid))
-                        navController.navigate(Route.NameEntry)
-                    },
-                    onWrongNumber = {
-                        navController.popBackStack(Route.PhoneEntry(route.role), inclusive = false)
-                    },
                 )
             }
 
@@ -199,6 +180,47 @@ fun InvigilatorNavHost(
                     onboardingViewModel = onboardingVm,
                 )
             }
+        }
+
+        // ── Phone entry (shared between sign-in and new-user paths) ──────────
+        composable<Route.PhoneEntry> { backStackEntry ->
+            val args = backStackEntry.toRoute<Route.PhoneEntry>()
+
+            PhoneEntryRoute(
+                flow = args.flow,
+                onCodeSent = { phoneE164 ->
+                    navController.navigate(Route.OtpEntry(flow = args.flow, phoneE164 = phoneE164))
+                },
+            )
+        }
+
+        // ── OTP entry (shared between sign-in and new-user paths) ────────────
+        composable<Route.OtpEntry> { backStackEntry ->
+            val args = backStackEntry.toRoute<Route.OtpEntry>()
+
+            OtpEntryRoute(
+                phone = args.phoneE164,
+                onNewUserOtpComplete = {
+                    navController.navigate(Route.NameEntry)
+                },
+                onSignInComplete = { role ->
+                    val home = when (role) {
+                        UserRole.STUDENT -> Route.StudentHome
+                        UserRole.PARENT  -> Route.ParentHome
+                    }
+                    navController.navigate(home) {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                    }
+                },
+                onResumeConsent = {
+                    navController.navigate(Route.Splash) {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                    }
+                },
+                onWrongNumber = {
+                    navController.popBackStack(Route.PhoneEntry(args.flow), inclusive = false)
+                },
+            )
         }
 
         // ── Consent (shared, parameterized by type string) ────────────────────
@@ -246,7 +268,7 @@ fun InvigilatorNavHost(
                     }
                 },
                 onLoggedOut = {
-                    navController.navigate(Route.OnboardingGraph) {
+                    navController.navigate(Route.Welcome) {
                         popUpTo(0) { inclusive = true }
                     }
                 },
@@ -270,7 +292,7 @@ fun InvigilatorNavHost(
                     )
                 },
                 onLoggedOut = {
-                    navController.navigate(Route.OnboardingGraph) {
+                    navController.navigate(Route.Welcome) {
                         popUpTo(0) { inclusive = true }
                     }
                 },
@@ -311,7 +333,7 @@ fun InvigilatorNavHost(
         composable<Route.ParentHome> {
             ParentHomeRoute(
                 onLoggedOut = {
-                    navController.navigate(Route.OnboardingGraph) {
+                    navController.navigate(Route.Welcome) {
                         popUpTo(0) { inclusive = true }
                     }
                 },
@@ -324,7 +346,7 @@ fun InvigilatorNavHost(
         composable<Route.StudentHome> {
             StudentHomeRoute(
                 onLoggedOut = {
-                    navController.navigate(Route.OnboardingGraph) {
+                    navController.navigate(Route.Welcome) {
                         popUpTo(0) { inclusive = true }
                     }
                 },

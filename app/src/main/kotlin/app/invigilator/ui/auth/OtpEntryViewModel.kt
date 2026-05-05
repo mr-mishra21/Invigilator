@@ -4,7 +4,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.invigilator.core.auth.AuthRepository
+import app.invigilator.core.user.AccountStatus
+import app.invigilator.core.user.UserDoc
+import app.invigilator.core.user.UserRepository
+import app.invigilator.core.user.UserRole
 import app.invigilator.core.util.toUserMessage
+import app.invigilator.ui.nav.AuthFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,12 +19,18 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+sealed interface OtpDestination {
+    data object ProceedToCreateUser : OtpDestination
+    data class GoToHome(val role: UserRole) : OtpDestination
+    data class ResumeConsent(val userDoc: UserDoc) : OtpDestination
+    data object UnknownNumber : OtpDestination
+}
+
 data class OtpEntryUiState(
     val otp: String = "",
     val isLoading: Boolean = false,
     val error: String? = null,
-    /** Non-null once OTP verified; the caller stores uid in OnboardingViewModel then navigates. */
-    val verifiedUid: String? = null,
+    val nextDestination: OtpDestination? = null,
     val resendSecondsRemaining: Int = 60,
     val isResending: Boolean = false,
 )
@@ -33,10 +44,14 @@ sealed interface OtpEntryEvent {
 @HiltViewModel
 class OtpEntryViewModel @Inject constructor(
     private val authRepository: AuthRepository,
+    private val userRepository: UserRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private val phone: String = checkNotNull(savedStateHandle["phone"])
+    private val phone: String = checkNotNull(savedStateHandle["phoneE164"])
+    private val flow: AuthFlow = AuthFlow.valueOf(
+        savedStateHandle.get<String>("flow") ?: AuthFlow.NEW_USER.name
+    )
 
     private val _uiState = MutableStateFlow(OtpEntryUiState())
     val uiState: StateFlow<OtpEntryUiState> = _uiState.asStateFlow()
@@ -53,20 +68,63 @@ class OtpEntryViewModel @Inject constructor(
         }
     }
 
-    fun clearNavigationFlag() {
-        _uiState.update { it.copy(verifiedUid = null) }
-    }
-
     private fun verifyOtp() {
         val otp = _uiState.value.otp
         if (otp.length != 6) return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             authRepository.verifyOtp(otp)
-                .onSuccess { uid -> _uiState.update { it.copy(isLoading = false, verifiedUid = uid) } }
+                .onSuccess { uid -> handleOtpSuccess(uid) }
                 .onFailure { e ->
                     _uiState.update { it.copy(isLoading = false, error = e.toUserMessage(), otp = "") }
                 }
+        }
+    }
+
+    private suspend fun handleOtpSuccess(uid: String) {
+        when (flow) {
+            AuthFlow.NEW_USER -> {
+                _uiState.update { it.copy(isLoading = false, nextDestination = OtpDestination.ProceedToCreateUser) }
+            }
+            AuthFlow.SIGN_IN -> {
+                userRepository.getUser(uid)
+                    .onSuccess { userDoc ->
+                        when {
+                            userDoc == null -> {
+                                authRepository.signOut()
+                                _uiState.update {
+                                    it.copy(
+                                        isLoading = false,
+                                        nextDestination = OtpDestination.UnknownNumber,
+                                        error = "We don't recognize this number. Try creating an account instead.",
+                                    )
+                                }
+                            }
+                            userDoc.accountStatus == AccountStatus.ACTIVE.firestoreValue -> {
+                                val role = UserRole.fromFirestore(userDoc.role)
+                                if (role != null) {
+                                    _uiState.update {
+                                        it.copy(isLoading = false, nextDestination = OtpDestination.GoToHome(role))
+                                    }
+                                } else {
+                                    _uiState.update {
+                                        it.copy(isLoading = false, nextDestination = OtpDestination.ResumeConsent(userDoc))
+                                    }
+                                }
+                            }
+                            else -> {
+                                _uiState.update {
+                                    it.copy(isLoading = false, nextDestination = OtpDestination.ResumeConsent(userDoc))
+                                }
+                            }
+                        }
+                    }
+                    .onFailure { e ->
+                        _uiState.update {
+                            it.copy(isLoading = false, error = "Could not load your account. Please try again.")
+                        }
+                    }
+            }
         }
     }
 

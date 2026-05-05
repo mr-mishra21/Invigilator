@@ -25,21 +25,29 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.invigilator.core.user.UserDoc
+import app.invigilator.core.user.UserRole
 
 @Composable
 fun OtpEntryRoute(
-    role: String,
     phone: String,
-    onVerified: (uid: String) -> Unit,
+    onNewUserOtpComplete: () -> Unit,
+    onSignInComplete: (UserRole) -> Unit,
+    onResumeConsent: (UserDoc) -> Unit,
     onWrongNumber: () -> Unit,
     viewModel: OtpEntryViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(state.verifiedUid) {
-        state.verifiedUid?.let { uid ->
-            viewModel.clearNavigationFlag()
-            onVerified(uid)
+    LaunchedEffect(state.nextDestination) {
+        when (val dest = state.nextDestination) {
+            null -> {}
+            OtpDestination.ProceedToCreateUser -> onNewUserOtpComplete()
+            is OtpDestination.GoToHome -> onSignInComplete(dest.role)
+            is OtpDestination.ResumeConsent -> onResumeConsent(dest.userDoc)
+            OtpDestination.UnknownNumber -> {
+                // Stay on screen; error shown via state.error.
+            }
         }
     }
 

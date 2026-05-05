@@ -8,23 +8,22 @@ import app.invigilator.core.user.UserRepository
 import app.invigilator.core.user.UserRole
 import app.invigilator.core.util.toUserMessage
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.time.LocalDate
 import java.time.Period
 import java.util.Date
 import javax.inject.Inject
 
 sealed interface OnboardingDestination {
-    /** Adult student → show AdultStudentSelfConsent (Phase 4) */
     data object ConsentAdultStudent : OnboardingDestination
-    /** Minor student → show share-code screen (Phase 4) */
     data object StudentShareCode : OnboardingDestination
-    /** Parent → show ParentTermsOfService (Phase 4) */
     data object ConsentParentToS : OnboardingDestination
 }
 
@@ -57,6 +56,7 @@ sealed interface OnboardingEvent {
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
     private val userRepository: UserRepository,
+    private val firebaseAuth: FirebaseAuth,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(OnboardingUiState())
@@ -78,7 +78,6 @@ class OnboardingViewModel @Inject constructor(
 
     private fun submitName() {
         val state = _uiState.value
-        val uid   = state.uid ?: return
         val name  = state.name.trim()
         if (name.isBlank()) {
             _uiState.update { it.copy(error = "Please enter your name") }
@@ -88,34 +87,48 @@ class OnboardingViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            val doc = UserDoc(
-                uid           = uid,
-                role          = state.role,
-                displayName   = name,
-                phoneNumber   = "",        // already on Firebase Auth; not re-captured here
-                dateOfBirth   = state.dobMillis?.let { Timestamp(Date(it)) },
-                createdAt     = Timestamp.now(),
-                accountStatus = AccountStatus.PENDING_CONSENT.firestoreValue,
-            )
+            val uid = firebaseAuth.currentUser?.uid ?: run {
+                _uiState.update { it.copy(isLoading = false, error = "Not signed in. Please try again.") }
+                return@launch
+            }
 
-            userRepository.createUser(doc).fold(
-                onSuccess = {
-                    val destination = when {
-                        state.role == UserRole.PARENT.firestoreValue ->
-                            OnboardingDestination.ConsentParentToS
-
-                        state.role == UserRole.STUDENT.firestoreValue && state.isAdult ->
-                            OnboardingDestination.ConsentAdultStudent
-
-                        else ->
-                            OnboardingDestination.StudentShareCode
+            userRepository.userDocExists(uid).fold(
+                onSuccess = { exists ->
+                    if (exists) {
+                        Timber.w("OnboardingViewModel: user doc already exists for $uid; skipping createUser")
+                        _uiState.update { it.copy(isLoading = false, nameSubmitDone = computeDestination(state)) }
+                        return@fold
                     }
-                    _uiState.update { it.copy(isLoading = false, nameSubmitDone = destination) }
+
+                    val doc = UserDoc(
+                        uid           = uid,
+                        role          = state.role,
+                        displayName   = name,
+                        phoneNumber   = "",
+                        dateOfBirth   = state.dobMillis?.let { Timestamp(Date(it)) },
+                        createdAt     = Timestamp.now(),
+                        accountStatus = AccountStatus.PENDING_CONSENT.firestoreValue,
+                    )
+
+                    userRepository.createUser(doc).fold(
+                        onSuccess = {
+                            _uiState.update { it.copy(isLoading = false, nameSubmitDone = computeDestination(state)) }
+                        },
+                        onFailure = { e ->
+                            _uiState.update { it.copy(isLoading = false, error = e.toUserMessage()) }
+                        },
+                    )
                 },
                 onFailure = { e ->
                     _uiState.update { it.copy(isLoading = false, error = e.toUserMessage()) }
                 },
             )
         }
+    }
+
+    private fun computeDestination(state: OnboardingUiState): OnboardingDestination = when {
+        state.role == UserRole.PARENT.firestoreValue -> OnboardingDestination.ConsentParentToS
+        state.role == UserRole.STUDENT.firestoreValue && state.isAdult -> OnboardingDestination.ConsentAdultStudent
+        else -> OnboardingDestination.StudentShareCode
     }
 }

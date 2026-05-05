@@ -25,11 +25,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.invigilator.ui.nav.AuthFlow
 
 @Composable
 fun PhoneEntryRoute(
-    role: String,
-    onOtpSent: (phone: String) -> Unit,
+    flow: AuthFlow,
+    onCodeSent: (phoneE164: String) -> Unit,
     viewModel: PhoneEntryViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -37,7 +38,7 @@ fun PhoneEntryRoute(
     LaunchedEffect(state.normalizedPhone) {
         state.normalizedPhone?.let { phone ->
             viewModel.clearNavigationFlag()
-            onOtpSent(phone)
+            onCodeSent(phone)
         }
     }
 

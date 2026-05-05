@@ -37,6 +37,13 @@
     <string name="notification_session_active_body">Invigilator पर वापस जाने के लिए टैप करें</string>
     <string name="notification_action_end">सत्र समाप्त करें</string>
 
+    <!-- Welcome [DRAFT] -->
+    <string name="welcome_title">[DRAFT] Invigilator में आपका स्वागत है</string>
+    <string name="welcome_subtitle">[DRAFT] ध्यान केंद्रित रहें। स्मार्ट तरीके से पढ़ें।</string>
+    <string name="welcome_create_account">[DRAFT] खाता बनाएं</string>
+    <string name="welcome_sign_in">[DRAFT] मेरा एक खाता है</string>
+    <string name="sign_in_unknown_number">[DRAFT] हम इस नंबर को नहीं पहचानते। इसके बजाय खाता बनाने की कोशिश करें।</string>
+
     <!-- Celebration [DRAFT] -->
     <string name="celebration_done">%d-मिनट का फोकस सत्र पूरा हुआ!</string>
     <string name="celebration_subtitle">ध्यान केंद्रित रखने के लिए शाबाश।</string>

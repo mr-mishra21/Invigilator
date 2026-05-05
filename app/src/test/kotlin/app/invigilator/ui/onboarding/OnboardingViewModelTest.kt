@@ -4,7 +4,11 @@ import app.invigilator.core.user.AccountStatus
 import app.invigilator.core.user.UserRepository
 import app.invigilator.core.user.UserRole
 import app.invigilator.util.MainDispatcherRule
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -22,7 +26,10 @@ class OnboardingViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val userRepository: UserRepository = mockk()
-    private fun viewModel() = OnboardingViewModel(userRepository)
+    private val mockFirebaseUser: FirebaseUser = mockk { every { uid } returns "uid" }
+    private val mockFirebaseAuth: FirebaseAuth = mockk { every { currentUser } returns mockFirebaseUser }
+
+    private fun viewModel() = OnboardingViewModel(userRepository, mockFirebaseAuth)
 
     @Test
     fun `role selected event updates state`() = runTest {
@@ -76,7 +83,6 @@ class OnboardingViewModelTest {
     @Test
     fun `submit name with blank name sets error`() = runTest {
         val vm = viewModel()
-        vm.onEvent(OnboardingEvent.UidReceived("uid"))
         vm.onEvent(OnboardingEvent.NameChanged("   "))
         vm.onEvent(OnboardingEvent.SubmitName)
         assertNotNull(vm.uiState.value.error)
@@ -85,12 +91,12 @@ class OnboardingViewModelTest {
 
     @Test
     fun `submit name for adult student routes to adult consent`() = runTest {
+        coEvery { userRepository.userDocExists(any()) } returns Result.success(false)
         coEvery { userRepository.createUser(any()) } returns Result.success(Unit)
         val vm = viewModel()
         val dob = LocalDate.now().minusYears(20).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
         vm.onEvent(OnboardingEvent.RoleSelected(UserRole.STUDENT.firestoreValue))
         vm.onEvent(OnboardingEvent.DobSelected(dob))
-        vm.onEvent(OnboardingEvent.UidReceived("uid"))
         vm.onEvent(OnboardingEvent.NameChanged("Aarav"))
         vm.onEvent(OnboardingEvent.SubmitName)
 
@@ -99,12 +105,12 @@ class OnboardingViewModelTest {
 
     @Test
     fun `submit name for minor student routes to share code`() = runTest {
+        coEvery { userRepository.userDocExists(any()) } returns Result.success(false)
         coEvery { userRepository.createUser(any()) } returns Result.success(Unit)
         val vm = viewModel()
         val dob = LocalDate.now().minusYears(15).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
         vm.onEvent(OnboardingEvent.RoleSelected(UserRole.STUDENT.firestoreValue))
         vm.onEvent(OnboardingEvent.DobSelected(dob))
-        vm.onEvent(OnboardingEvent.UidReceived("uid"))
         vm.onEvent(OnboardingEvent.NameChanged("Ritam"))
         vm.onEvent(OnboardingEvent.SubmitName)
 
@@ -113,10 +119,10 @@ class OnboardingViewModelTest {
 
     @Test
     fun `submit name for parent routes to parent ToS`() = runTest {
+        coEvery { userRepository.userDocExists(any()) } returns Result.success(false)
         coEvery { userRepository.createUser(any()) } returns Result.success(Unit)
         val vm = viewModel()
         vm.onEvent(OnboardingEvent.RoleSelected(UserRole.PARENT.firestoreValue))
-        vm.onEvent(OnboardingEvent.UidReceived("uid"))
         vm.onEvent(OnboardingEvent.NameChanged("Priya"))
         vm.onEvent(OnboardingEvent.SubmitName)
 
@@ -126,13 +132,13 @@ class OnboardingViewModelTest {
     @Test
     fun `submit name sets pending_consent account status in created doc`() = runTest {
         var capturedDoc: app.invigilator.core.user.UserDoc? = null
+        coEvery { userRepository.userDocExists(any()) } returns Result.success(false)
         coEvery { userRepository.createUser(any()) } answers {
             capturedDoc = firstArg()
             Result.success(Unit)
         }
         val vm = viewModel()
         vm.onEvent(OnboardingEvent.RoleSelected(UserRole.STUDENT.firestoreValue))
-        vm.onEvent(OnboardingEvent.UidReceived("uid"))
         vm.onEvent(OnboardingEvent.NameChanged("Test"))
         vm.onEvent(OnboardingEvent.SubmitName)
 
@@ -141,14 +147,37 @@ class OnboardingViewModelTest {
 
     @Test
     fun `createUser failure shows error`() = runTest {
+        coEvery { userRepository.userDocExists(any()) } returns Result.success(false)
         coEvery { userRepository.createUser(any()) } returns Result.failure(RuntimeException("db error"))
         val vm = viewModel()
         vm.onEvent(OnboardingEvent.RoleSelected(UserRole.STUDENT.firestoreValue))
-        vm.onEvent(OnboardingEvent.UidReceived("uid"))
         vm.onEvent(OnboardingEvent.NameChanged("Test"))
         vm.onEvent(OnboardingEvent.SubmitName)
 
         assertNotNull(vm.uiState.value.error)
         assertNull(vm.uiState.value.nameSubmitDone)
+    }
+
+    @Test
+    fun `existing user doc does not throw error and routes correctly`() = runTest {
+        coEvery { userRepository.userDocExists(any()) } returns Result.success(true)
+        val vm = viewModel()
+        vm.onEvent(OnboardingEvent.RoleSelected(UserRole.PARENT.firestoreValue))
+        vm.onEvent(OnboardingEvent.NameChanged("Priya"))
+        vm.onEvent(OnboardingEvent.SubmitName)
+
+        assertNull(vm.uiState.value.error)
+        assertEquals(OnboardingDestination.ConsentParentToS, vm.uiState.value.nameSubmitDone)
+    }
+
+    @Test
+    fun `createUser only called when doc does not exist`() = runTest {
+        coEvery { userRepository.userDocExists(any()) } returns Result.success(true)
+        val vm = viewModel()
+        vm.onEvent(OnboardingEvent.RoleSelected(UserRole.STUDENT.firestoreValue))
+        vm.onEvent(OnboardingEvent.NameChanged("Test"))
+        vm.onEvent(OnboardingEvent.SubmitName)
+
+        coVerify(exactly = 0) { userRepository.createUser(any()) }
     }
 }
