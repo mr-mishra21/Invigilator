@@ -31,7 +31,7 @@ class OtpEntryViewModelTest {
     private val userRepository: UserRepository = mockk()
 
     private fun savedState(flow: AuthFlow = AuthFlow.NEW_USER) = SavedStateHandle(
-        mapOf("flow" to flow.name, "phoneE164" to "+919876543210")
+        mapOf("flow" to flow, "phoneE164" to "+919876543210")
     )
 
     private fun viewModel(flow: AuthFlow = AuthFlow.NEW_USER) =

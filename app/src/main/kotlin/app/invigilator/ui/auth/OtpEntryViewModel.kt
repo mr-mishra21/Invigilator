@@ -49,9 +49,7 @@ class OtpEntryViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val phone: String = checkNotNull(savedStateHandle["phoneE164"])
-    private val flow: AuthFlow = AuthFlow.valueOf(
-        savedStateHandle.get<String>("flow") ?: AuthFlow.NEW_USER.name
-    )
+    private val flow: AuthFlow = savedStateHandle.get<AuthFlow>("flow") ?: AuthFlow.NEW_USER
 
     private val _uiState = MutableStateFlow(OtpEntryUiState())
     val uiState: StateFlow<OtpEntryUiState> = _uiState.asStateFlow()
