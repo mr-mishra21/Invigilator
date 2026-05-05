@@ -36,4 +36,17 @@
     <string name="notification_session_active_title">फोकस सत्र सक्रिय है</string>
     <string name="notification_session_active_body">Invigilator पर वापस जाने के लिए टैप करें</string>
     <string name="notification_action_end">सत्र समाप्त करें</string>
+
+    <!-- Session summary [DRAFT] -->
+    <string name="session_summary_title">सत्र सारांश</string>
+    <string name="session_summary_x_minute_session">%d-मिनट का सत्र</string>
+    <string name="verdict_excellent">उत्कृष्ट एकाग्रता</string>
+    <string name="verdict_good">अच्छी एकाग्रता</string>
+    <string name="verdict_some">कुछ व्यवधान</string>
+    <string name="verdict_lots">बहुत व्यवधान</string>
+    <string name="session_summary_distractions_header">इस सत्र के दौरान व्यवधान</string>
+    <string name="session_summary_no_distractions">बढ़िया — कोई व्यवधान नहीं!</string>
+    <string name="session_summary_dwell_format">%1$s — %2$d सेकंड</string>
+    <string name="action_start_another">एक और सत्र शुरू करें</string>
+    <string name="action_done">हो गया</string>
 </resources>

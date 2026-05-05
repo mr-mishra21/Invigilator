@@ -39,6 +39,7 @@ import app.invigilator.ui.onboarding.RoleSelectRoute
 import app.invigilator.ui.session.PermissionsRoute
 import app.invigilator.ui.session.PermissionsViewModel
 import app.invigilator.ui.session.SessionActiveRoute
+import app.invigilator.ui.session.SessionSummaryRoute
 import app.invigilator.ui.session.StartSessionRoute
 import app.invigilator.ui.splash.SplashRoute
 import com.google.firebase.auth.FirebaseAuth
@@ -373,10 +374,27 @@ fun InvigilatorNavHost(
 
         composable<Route.SessionActive> {
             SessionActiveRoute(
-                onSessionEnded = {
+                onSessionEnded = { sessionId, studentUid ->
+                    navController.navigate(Route.SessionSummary(sessionId, studentUid)) {
+                        popUpTo(Route.StudentHome) { inclusive = false }
+                    }
+                },
+            )
+        }
+
+        composable<Route.SessionSummary> { backStackEntry ->
+            val args = backStackEntry.toRoute<Route.SessionSummary>()
+            SessionSummaryRoute(
+                sessionId = args.sessionId,
+                studentUid = args.studentUid,
+                onStartAnother = {
+                    navController.navigate(Route.StartSession) {
+                        popUpTo(Route.StudentHome) { inclusive = false }
+                    }
+                },
+                onDone = {
                     navController.navigate(Route.StudentHome) {
-                        popUpTo(navController.graph.id) { inclusive = false }
-                        launchSingleTop = true
+                        popUpTo(Route.StudentHome) { inclusive = true }
                     }
                 },
             )

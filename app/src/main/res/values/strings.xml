@@ -36,4 +36,17 @@
     <string name="notification_session_active_title">Focus session active</string>
     <string name="notification_session_active_body">Tap to return to Invigilator</string>
     <string name="notification_action_end">End session</string>
+
+    <!-- Session summary -->
+    <string name="session_summary_title">Session summary</string>
+    <string name="session_summary_x_minute_session">%d-minute session</string>
+    <string name="verdict_excellent">Excellent focus</string>
+    <string name="verdict_good">Good focus</string>
+    <string name="verdict_some">Some distractions</string>
+    <string name="verdict_lots">Lots of distractions</string>
+    <string name="session_summary_distractions_header">Distractions during this session</string>
+    <string name="session_summary_no_distractions">Great — no distractions!</string>
+    <string name="session_summary_dwell_format">%1$s — %2$ds</string>
+    <string name="action_start_another">Start another session</string>
+    <string name="action_done">Done</string>
 </resources>

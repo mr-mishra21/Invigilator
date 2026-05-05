@@ -36,4 +36,17 @@
     <string name="notification_session_active_title">ফোকাছ ছেছন সক্ৰিয়</string>
     <string name="notification_session_active_body">Invigilator-লৈ উভতিবলৈ টেপ কৰক</string>
     <string name="notification_action_end">ছেছন সমাপ্ত কৰক</string>
+
+    <!-- Session summary [DRAFT] -->
+    <string name="session_summary_title">ছেছন সাৰসংক্ষেপ</string>
+    <string name="session_summary_x_minute_session">%d-মিনিটৰ ছেছন</string>
+    <string name="verdict_excellent">অসাধাৰণ মনোযোগ</string>
+    <string name="verdict_good">ভাল মনোযোগ</string>
+    <string name="verdict_some">কিছু বিক্ষেপ</string>
+    <string name="verdict_lots">বহু বিক্ষেপ</string>
+    <string name="session_summary_distractions_header">এই ছেছনত বিক্ষেপসমূহ</string>
+    <string name="session_summary_no_distractions">বাহ — কোনো বিক্ষেপ নাই!</string>
+    <string name="session_summary_dwell_format">%1$s — %2$d ছেকেণ্ড</string>
+    <string name="action_start_another">আন এটা ছেছন আৰম্ভ কৰক</string>
+    <string name="action_done">সম্পন্ন</string>
 </resources>
