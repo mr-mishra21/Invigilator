@@ -38,6 +38,18 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
+private fun sessionActivityLine(student: LinkedStudentRow): String {
+    val minutesAgo = student.lastSessionMinutesAgo
+    return when {
+        minutesAgo == null -> "No sessions yet"
+        student.sessionsToday == 0 -> "No sessions today"
+        else -> {
+            val agoText = if (minutesAgo < 60) "${minutesAgo}m ago" else "${minutesAgo / 60}h ago"
+            "${student.sessionsToday} sessions today • last $agoText"
+        }
+    }
+}
+
 @Composable
 fun ParentHomeRoute(
     onLoggedOut: () -> Unit,
@@ -140,7 +152,7 @@ fun ParentHomeScreen(
                 }
                 else -> {
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        items(state.linkedStudents, key = { it.uid }) { student ->
+                        items(state.linkedStudents, key = { it.studentUid }) { student ->
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -153,10 +165,17 @@ fun ParentHomeScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    Text(
-                                        text = student.displayName,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                    )
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = student.displayName,
+                                            style = MaterialTheme.typography.bodyLarge,
+                                        )
+                                        Text(
+                                            text = sessionActivityLine(student),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
                                     Text(
                                         text = student.accountStatus.replace('_', ' '),
                                         style = MaterialTheme.typography.labelMedium,
