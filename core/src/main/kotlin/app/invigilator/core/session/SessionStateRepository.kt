@@ -7,6 +7,7 @@ data class ActiveSession(
     val sessionType: SessionType,
     val studentUid: String,
     val startedAtMillis: Long,
+    val plannedDurationMinutes: Int,  // 0 for OPEN_ENDED
 )
 
 enum class SessionEndReason {

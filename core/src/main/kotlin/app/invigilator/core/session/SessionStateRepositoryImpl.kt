@@ -22,6 +22,10 @@ internal class SessionStateRepositoryImpl @Inject constructor() : SessionStateRe
             sessionType = sessionType,
             studentUid = studentUid,
             startedAtMillis = System.currentTimeMillis(),
+            plannedDurationMinutes = when (sessionType) {
+                is SessionType.Timed -> sessionType.durationMinutes
+                SessionType.OpenEnded -> 0
+            },
         )
         _lastEndReason.value = null
     }

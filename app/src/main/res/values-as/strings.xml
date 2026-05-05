@@ -37,6 +37,10 @@
     <string name="notification_session_active_body">Invigilator-লৈ উভতিবলৈ টেপ কৰক</string>
     <string name="notification_action_end">ছেছন সমাপ্ত কৰক</string>
 
+    <!-- Celebration [DRAFT] -->
+    <string name="celebration_done">%d-মিনিটৰ ফোকাছ ছেছন সম্পন্ন!</string>
+    <string name="celebration_subtitle">মনোযোগী হৈ থকাৰ বাবে চাবাছ।</string>
+
     <!-- Session summary [DRAFT] -->
     <string name="session_summary_title">ছেছন সাৰসংক্ষেপ</string>
     <string name="session_summary_x_minute_session">%d-মিনিটৰ ছেছন</string>

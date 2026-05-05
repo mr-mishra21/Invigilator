@@ -46,6 +46,11 @@ sealed interface Route {
         val sessionId: String,
         val studentUid: String,
     ) : Route
+    @Serializable data class Celebration(
+        val sessionId: String,
+        val studentUid: String,
+        val durationMinutes: Int,
+    ) : Route
 
     // ── Home ──────────────────────────────────────────────────────────────────
     @Serializable data object ParentHome : Route

@@ -37,6 +37,10 @@
     <string name="notification_session_active_body">Tap to return to Invigilator</string>
     <string name="notification_action_end">End session</string>
 
+    <!-- Celebration -->
+    <string name="celebration_done">%d-minute focus session done!</string>
+    <string name="celebration_subtitle">Great work staying focused.</string>
+
     <!-- Session summary -->
     <string name="session_summary_title">Session summary</string>
     <string name="session_summary_x_minute_session">%d-minute session</string>

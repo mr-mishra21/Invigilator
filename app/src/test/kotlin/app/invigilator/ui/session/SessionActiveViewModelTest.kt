@@ -30,6 +30,7 @@ class SessionActiveViewModelTest {
             sessionType = SessionType.Timed(25),
             studentUid = "student-1",
             startedAtMillis = startedAtMillis,
+            plannedDurationMinutes = 25,
         )
 
     @Test

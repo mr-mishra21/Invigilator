@@ -190,10 +190,7 @@ class SessionMonitorService : Service() {
         reason: SessionEndReason,
     ): SessionDoc {
         val durationSeconds = (endedAtMillis - active.startedAtMillis) / 1000
-        val plannedSeconds = when (val t = active.sessionType) {
-            is SessionType.Timed -> t.durationMinutes * 60L
-            SessionType.OpenEnded -> 0L
-        }
+        val plannedSeconds = active.plannedDurationMinutes * 60L
         val typeString = when (active.sessionType) {
             is SessionType.Timed -> "TIMED"
             SessionType.OpenEnded -> "OPEN_ENDED"

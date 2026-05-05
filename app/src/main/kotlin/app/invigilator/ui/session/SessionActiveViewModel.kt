@@ -3,6 +3,7 @@ package app.invigilator.ui.session
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.invigilator.core.session.ActiveSession
+import app.invigilator.core.session.SessionEndReason
 import app.invigilator.core.session.SessionStateRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -33,6 +34,7 @@ class SessionActiveViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.Eagerly, SessionActiveUiState())
 
     fun activeSessionSnapshot(): ActiveSession? = sessionState.activeSession.value
+    fun lastEndReasonSnapshot(): SessionEndReason? = sessionState.lastEndReason.value
 
     init {
         viewModelScope.launch {

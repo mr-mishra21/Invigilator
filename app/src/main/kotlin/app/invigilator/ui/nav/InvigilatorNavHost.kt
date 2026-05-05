@@ -38,6 +38,7 @@ import app.invigilator.ui.onboarding.OnboardingViewModel
 import app.invigilator.ui.onboarding.RoleSelectRoute
 import app.invigilator.ui.session.PermissionsRoute
 import app.invigilator.ui.session.PermissionsViewModel
+import app.invigilator.ui.session.CelebrationScreen
 import app.invigilator.ui.session.SessionActiveRoute
 import app.invigilator.ui.session.SessionSummaryRoute
 import app.invigilator.ui.session.StartSessionRoute
@@ -377,6 +378,24 @@ fun InvigilatorNavHost(
                 onSessionEnded = { sessionId, studentUid ->
                     navController.navigate(Route.SessionSummary(sessionId, studentUid)) {
                         popUpTo(Route.StudentHome) { inclusive = false }
+                    }
+                },
+                onTimerExpired = { sessionId, studentUid, durationMinutes ->
+                    navController.navigate(Route.Celebration(sessionId, studentUid, durationMinutes)) {
+                        popUpTo(Route.StudentHome) { inclusive = false }
+                    }
+                },
+            )
+        }
+
+        composable<Route.Celebration> { backStackEntry ->
+            val args = backStackEntry.toRoute<Route.Celebration>()
+            CelebrationScreen(
+                durationMinutes = args.durationMinutes,
+                onContinue = {
+                    navController.navigate(Route.SessionSummary(args.sessionId, args.studentUid)) {
+                        popUpTo(Route.StudentHome) { inclusive = false }
+                        launchSingleTop = true
                     }
                 },
             )

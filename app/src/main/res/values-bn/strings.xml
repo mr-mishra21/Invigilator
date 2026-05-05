@@ -37,6 +37,10 @@
     <string name="notification_session_active_body">Invigilator-এ ফিরতে ট্যাপ করুন</string>
     <string name="notification_action_end">সেশন শেষ করুন</string>
 
+    <!-- Celebration [DRAFT] -->
+    <string name="celebration_done">%d-মিনিটের ফোকাস সেশন শেষ!</string>
+    <string name="celebration_subtitle">মনোযোগ ধরে রাখার জন্য অভিনন্দন।</string>
+
     <!-- Session summary [DRAFT] -->
     <string name="session_summary_title">সেশন সারসংক্ষেপ</string>
     <string name="session_summary_x_minute_session">%d-মিনিটের সেশন</string>
