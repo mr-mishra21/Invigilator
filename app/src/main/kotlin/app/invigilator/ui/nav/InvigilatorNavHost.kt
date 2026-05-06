@@ -201,6 +201,14 @@ fun InvigilatorNavHost(
             OtpEntryRoute(
                 phone = args.phoneE164,
                 onNewUserOtpComplete = {
+                    // Pop PhoneEntry (and OtpEntry above it) off the top-level stack
+                    // before navigating to NameEntry. NameEntry lives inside
+                    // OnboardingGraph; if we navigate to it from outside, Compose
+                    // creates a fresh graph entry and a fresh OnboardingViewModel,
+                    // losing the role and DOB collected at RoleSelect/DOBEntry.
+                    // Popping first returns the NavController to inside the existing
+                    // OnboardingGraph entry, preserving its OnboardingViewModel state.
+                    navController.popBackStack<Route.PhoneEntry>(inclusive = true)
                     navController.navigate(Route.NameEntry)
                 },
                 onSignInComplete = { role ->
