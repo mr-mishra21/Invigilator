@@ -61,6 +61,4 @@
     <string name="action_start_another">Start another session</string>
     <string name="action_done">Done</string>
 
-    <!-- Debug only -->
-    <string name="debug_test_voice_button" translatable="false">Test voice (debug)</string>
 </resources>

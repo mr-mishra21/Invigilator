@@ -12,6 +12,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import app.invigilator.core.intervention.InterventionEngine
 import app.invigilator.core.session.ActiveSession
 import app.invigilator.core.session.AppCategory
 import app.invigilator.core.session.DistractionClassifier
@@ -45,6 +46,7 @@ class SessionMonitorService : Service() {
     @Inject lateinit var classifier: DistractionClassifier
     @Inject lateinit var sessionStats: SessionStatsRepository
     @Inject lateinit var sessionSummaryRepo: SessionSummaryRepository
+    @Inject lateinit var interventionEngine: InterventionEngine
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var monitorJob: Job? = null
@@ -88,11 +90,22 @@ class SessionMonitorService : Service() {
         monitorJob = scope.launch {
             while (isActive) {
                 detectForegroundApp()
+                tickInterventionEngine()
                 checkTimerExpiry()
                 delay(POLL_INTERVAL_MS)
             }
         }
         Timber.d("SessionMonitor: started polling")
+    }
+
+    private fun tickInterventionEngine() {
+        val app = currentApp ?: return
+        val dwellSeconds = (System.currentTimeMillis() - currentAppEnteredAt) / 1000
+        interventionEngine.onAppDwellTick(
+            packageName = app,
+            category = currentAppCategory,
+            dwellSeconds = dwellSeconds,
+        )
     }
 
     private fun detectForegroundApp() {
@@ -178,6 +191,7 @@ class SessionMonitorService : Service() {
         monitorJob?.cancel()
         sessionState.endSession(reason)
         sessionStats.reset()
+        interventionEngine.onSessionEnded()
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
         Timber.d("SessionMonitor: stopped ($reason)")

@@ -1,13 +1,7 @@
 package app.invigilator.ui.session
 
-import app.invigilator.core.intervention.AppLanguage
-import app.invigilator.core.intervention.AppLanguageRepository
-import app.invigilator.core.intervention.NudgePhraseLibrary
-import app.invigilator.core.intervention.TtsManager
 import app.invigilator.core.session.SessionType
 import app.invigilator.util.MainDispatcherRule
-import io.mockk.coEvery
-import io.mockk.mockk
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -18,13 +12,7 @@ class StartSessionViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val ttsManager: TtsManager = mockk(relaxed = true)
-    private val languageRepo: AppLanguageRepository = mockk {
-        coEvery { isTtsAvailable(any()) } returns false
-    }
-    private val nudgePhraseLibrary: NudgePhraseLibrary = NudgePhraseLibrary()
-
-    private fun viewModel() = StartSessionViewModel(ttsManager, languageRepo, nudgePhraseLibrary)
+    private fun viewModel() = StartSessionViewModel()
 
     @Test
     fun `default mode is TIMED with 25 minute duration`() {
