@@ -132,6 +132,9 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.functions)
 
+    // ── DataStore ─────────────────────────────────────────────────────────────
+    implementation(libs.androidx.datastore.preferences)
+
     // ── Logging ───────────────────────────────────────────────────────────────
     implementation(libs.timber)
 

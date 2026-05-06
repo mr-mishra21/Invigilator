@@ -1,9 +1,16 @@
 package app.invigilator.core.di
 
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStoreFile
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import app.invigilator.core.auth.AuthRepository
 import app.invigilator.core.auth.AuthRepositoryImpl
 import app.invigilator.core.consent.ConsentRepository
 import app.invigilator.core.consent.ConsentRepositoryImpl
+import app.invigilator.core.intervention.AppLanguageRepository
+import app.invigilator.core.intervention.AppLanguageRepositoryImpl
 import app.invigilator.core.linking.LinkingRepository
 import app.invigilator.core.linking.LinkingRepositoryImpl
 import app.invigilator.core.session.SessionStateRepository
@@ -21,6 +28,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -60,7 +68,21 @@ internal abstract class CoreModule {
         impl: SessionSummaryRepositoryImpl
     ): SessionSummaryRepository
 
+    @Binds
+    @Singleton
+    abstract fun bindAppLanguageRepository(
+        impl: AppLanguageRepositoryImpl
+    ): AppLanguageRepository
+
     companion object {
+
+        @Provides
+        @Singleton
+        fun providePreferencesDataStore(
+            @ApplicationContext context: Context,
+        ): DataStore<Preferences> = PreferenceDataStoreFactory.create(
+            produceFile = { context.preferencesDataStoreFile("invigilator_prefs") }
+        )
 
         @Provides
         @Singleton

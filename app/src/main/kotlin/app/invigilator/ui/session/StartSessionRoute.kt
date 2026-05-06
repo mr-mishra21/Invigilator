@@ -24,5 +24,6 @@ fun StartSessionRoute(
             }
         },
         onBack = onBack,
+        onTestVoice = { viewModel.testVoice() },
     )
 }

@@ -17,6 +17,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -27,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import app.invigilator.BuildConfig
 import app.invigilator.R
 
 private val DURATION_OPTIONS = listOf(15, 25, 45, 60, 90)
@@ -37,6 +39,7 @@ fun StartSessionScreen(
     state: StartSessionUiState,
     onEvent: (StartSessionEvent) -> Unit,
     onBack: () -> Unit,
+    onTestVoice: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -123,6 +126,16 @@ fun StartSessionScreen(
             }
 
             Spacer(Modifier.height(16.dp))
+
+            if (BuildConfig.DEBUG) {
+                Spacer(Modifier.height(24.dp))
+                OutlinedButton(
+                    onClick = { onTestVoice() },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.debug_test_voice_button))
+                }
+            }
         }
     }
 }

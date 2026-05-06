@@ -60,4 +60,7 @@
     <string name="session_summary_dwell_format">%1$s — %2$ds</string>
     <string name="action_start_another">Start another session</string>
     <string name="action_done">Done</string>
+
+    <!-- Debug only -->
+    <string name="debug_test_voice_button" translatable="false">Test voice (debug)</string>
 </resources>
