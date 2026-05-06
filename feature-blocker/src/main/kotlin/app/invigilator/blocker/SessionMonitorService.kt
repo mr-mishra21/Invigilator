@@ -64,6 +64,7 @@ class SessionMonitorService : Service() {
         private const val POLL_INTERVAL_MS = 2000L
         private const val DISTRACTION_DWELL_THRESHOLD_MS = 30_000L
         const val ACTION_STOP = "app.invigilator.action.STOP_SESSION"
+        const val ACTION_STOP_FROM_NAG = "app.invigilator.STOP_FROM_NAG"
     }
 
     override fun onCreate() {
@@ -76,6 +77,11 @@ class SessionMonitorService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP) {
             stopMonitoring()
+            return START_NOT_STICKY
+        }
+        if (intent?.action == ACTION_STOP_FROM_NAG) {
+            Timber.d("SessionMonitorService: stop requested from nag notification")
+            endSession(SessionEndReason.USER_ENDED)
             return START_NOT_STICKY
         }
         startForeground(NOTIFICATION_ID, buildNotification())

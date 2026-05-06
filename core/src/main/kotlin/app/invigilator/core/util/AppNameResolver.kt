@@ -1,4 +1,4 @@
-package app.invigilator.util
+package app.invigilator.core.util
 
 import android.content.Context
 import android.content.pm.PackageManager

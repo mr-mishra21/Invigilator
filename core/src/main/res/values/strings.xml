@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Nag notification channel -->
+    <string name="notif_channel_nag_name">Focus reminders</string>
+    <string name="notif_channel_nag_desc">Nudges and reminders during your study sessions</string>
+
+    <!-- Nag notification content -->
+    <string name="nag_title">Time to refocus?</string>
+    <string name="nag_body_format">You\'ve been on %1$s for %2$d minutes. Take a break or refocus?</string>
+    <string name="nag_action_refocus">Refocus</string>
+    <string name="nag_action_end_session">End session</string>
+</resources>

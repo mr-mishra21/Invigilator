@@ -21,6 +21,7 @@ class PermissionsViewModelTest {
     @Test
     fun `hasPermission is false on init when checker returns false`() {
         every { permissionChecker.hasUsageStatsPermission() } returns false
+        every { permissionChecker.hasNotificationPermission() } returns false
 
         val vm = viewModel()
 
@@ -30,6 +31,7 @@ class PermissionsViewModelTest {
     @Test
     fun `hasPermission becomes true after refresh when checker returns true`() {
         every { permissionChecker.hasUsageStatsPermission() } returns false
+        every { permissionChecker.hasNotificationPermission() } returns false
         val vm = viewModel()
         assertFalse(vm.state.value.hasPermission)
 

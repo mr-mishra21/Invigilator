@@ -60,4 +60,9 @@
     <string name="session_summary_dwell_format">%1$s — %2$d ছেকেণ্ড</string>
     <string name="action_start_another">আন এটা ছেছন আৰম্ভ কৰক</string>
     <string name="action_done">সম্পন্ন</string>
+
+    <!-- Notification permission [DRAFT] -->
+    <string name="permission_notifications_title">জাননী</string>
+    <string name="permission_notifications_description">ইনভিজিলেটৰক আপোনাৰ চেচনৰ সময়ত ফোকাছ ৰিমাইণ্ডাৰ দেখুৱাবলৈ অনুমতি দিয়ে।</string>
+    <string name="permission_notifications_allow">জাননীৰ অনুমতি দিয়ক</string>
 </resources>

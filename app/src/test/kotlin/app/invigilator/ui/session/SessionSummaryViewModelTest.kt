@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import app.invigilator.core.session.DistractionRecord
 import app.invigilator.core.session.SessionDoc
 import app.invigilator.core.session.SessionSummaryRepository
-import app.invigilator.util.AppNameResolver
+import app.invigilator.core.util.AppNameResolver
 import app.invigilator.util.MainDispatcherRule
 import io.mockk.every
 import io.mockk.mockk

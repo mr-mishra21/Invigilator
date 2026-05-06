@@ -61,4 +61,8 @@
     <string name="action_start_another">Start another session</string>
     <string name="action_done">Done</string>
 
+    <!-- Notification permission (Permissions screen) -->
+    <string name="permission_notifications_title">Notifications</string>
+    <string name="permission_notifications_description">Lets Invigilator show focus reminders during your sessions.</string>
+    <string name="permission_notifications_allow">Allow notifications</string>
 </resources>

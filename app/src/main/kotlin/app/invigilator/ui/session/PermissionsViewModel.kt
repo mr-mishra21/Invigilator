@@ -9,7 +9,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
-data class PermissionsUiState(val hasPermission: Boolean = false)
+data class PermissionsUiState(
+    val hasPermission: Boolean = false,
+    val hasNotificationPermission: Boolean = false,
+)
 
 sealed interface PermissionsEvent {
     data object GrantClicked : PermissionsEvent
@@ -36,6 +39,11 @@ class PermissionsViewModel @Inject constructor(
     }
 
     private fun refresh() {
-        _state.update { it.copy(hasPermission = permissionChecker.hasUsageStatsPermission()) }
+        _state.update {
+            it.copy(
+                hasPermission = permissionChecker.hasUsageStatsPermission(),
+                hasNotificationPermission = permissionChecker.hasNotificationPermission(),
+            )
+        }
     }
 }

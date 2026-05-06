@@ -1,5 +1,6 @@
 package app.invigilator.ui.session
 
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,6 +39,7 @@ fun PermissionsScreen(
     onEvent: (PermissionsEvent) -> Unit,
     onContinue: () -> Unit,
     onBack: () -> Unit,
+    onRequestNotificationPermission: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -90,7 +92,7 @@ fun PermissionsScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // Permission status row
+            // Usage stats permission row
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -120,6 +122,52 @@ fun PermissionsScreen(
                 }
             }
 
+            // Notification permission row (Android 13+ only)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Spacer(Modifier.height(16.dp))
+
+                Text(
+                    text = stringResource(R.string.permission_notifications_title),
+                    style = MaterialTheme.typography.labelLarge,
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.permission_notifications_description),
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    if (state.hasNotificationPermission) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                        Text(
+                            text = stringResource(R.string.permissions_granted),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            text = stringResource(R.string.permissions_not_granted),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+
             Spacer(Modifier.height(32.dp))
 
             OutlinedButton(
@@ -129,6 +177,18 @@ fun PermissionsScreen(
                     .height(56.dp),
             ) {
                 Text(stringResource(R.string.action_open_settings))
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !state.hasNotificationPermission) {
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = onRequestNotificationPermission,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                ) {
+                    Text(stringResource(R.string.permission_notifications_allow))
+                }
             }
 
             if (state.hasPermission) {

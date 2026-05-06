@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- [DRAFT] Bengali translations — needs native speaker review before pilot -->
+<resources>
+    <string name="notif_channel_nag_name">ফোকাস রিমাইন্ডার</string>
+    <string name="notif_channel_nag_desc">আপনার স্টাডি সেশনের সময় বিজ্ঞপ্তি</string>
+    <string name="nag_title">আবার মনোযোগ দিন?</string>
+    <string name="nag_body_format">আপনি %1$s এ %2$d মিনিট ধরে আছেন। বিরতি নিন বা মনোযোগ দিন?</string>
+    <string name="nag_action_refocus">মনোযোগ দিন</string>
+    <string name="nag_action_end_session">সেশন শেষ করুন</string>
+</resources>

@@ -1,5 +1,8 @@
 package app.invigilator.ui.session
 
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -18,7 +21,11 @@ fun PermissionsRoute(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // Re-check permission when the user returns from the Settings app.
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { viewModel.onEvent(PermissionsEvent.Refresh) }
+
+    // Re-check permissions when the user returns from the Settings app.
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
@@ -34,5 +41,8 @@ fun PermissionsRoute(
         onEvent = viewModel::onEvent,
         onContinue = onContinue,
         onBack = onBack,
+        onRequestNotificationPermission = {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        },
     )
 }

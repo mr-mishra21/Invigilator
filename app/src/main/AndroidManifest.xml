@@ -33,6 +33,15 @@
             android:exported="false"
             android:foregroundServiceType="dataSync" />
 
+        <receiver
+            android:name="app.invigilator.blocker.SessionEndReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="app.invigilator.ACTION_END_SESSION" />
+                <action android:name="app.invigilator.ACTION_REFOCUS" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

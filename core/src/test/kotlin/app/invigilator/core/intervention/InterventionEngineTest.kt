@@ -1,6 +1,7 @@
 package app.invigilator.core.intervention
 
 import app.invigilator.core.session.AppCategory
+import app.invigilator.core.util.AppNameResolver
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -18,6 +19,8 @@ class InterventionEngineTest {
     private val ttsManager: TtsManager = mockk(relaxed = true)
     private val phraseLibrary: NudgePhraseLibrary = mockk()
     private val languageRepo: AppLanguageRepository = mockk()
+    private val nagNotifier: NagNotifier = mockk(relaxed = true)
+    private val appNameResolver: AppNameResolver = mockk()
 
     private lateinit var engine: InterventionEngine
 
@@ -28,7 +31,8 @@ class InterventionEngineTest {
         coEvery { languageRepo.currentLanguage() } returns AppLanguage.ENGLISH
         coEvery { languageRepo.isTtsAvailable(AppLanguage.ENGLISH) } returns true
         every { phraseLibrary.phrase(any(), any()) } returns "test phrase"
-        engine = InterventionEngine(ttsManager, phraseLibrary, languageRepo)
+        every { appNameResolver.resolveDisplayName(any()) } answers { firstArg<String>().substringAfterLast('.') }
+        engine = InterventionEngine(ttsManager, phraseLibrary, languageRepo, nagNotifier, appNameResolver)
     }
 
     @Test
@@ -139,6 +143,37 @@ class InterventionEngineTest {
         engine.onAppDwellTick(pkg, AppCategory.DISTRACTING, 60L)
         advanceUntilIdle()
         verify(exactly = 0) { ttsManager.speak(any(), any()) }
+    }
+
+    @Test
+    fun `nag level posts notification with app name and minutes`() = runTest {
+        engine.scope = this
+        every { appNameResolver.resolveDisplayName(pkg) } returns "Distractor"
+        engine.onAppDwellTick(pkg, AppCategory.DISTRACTING, 60L)
+        engine.onAppDwellTick(pkg, AppCategory.DISTRACTING, 120L)
+        engine.onAppDwellTick(pkg, AppCategory.DISTRACTING, 180L)
+        advanceUntilIdle()
+        verify(exactly = 1) { nagNotifier.postNag("Distractor", 3) }
+    }
+
+    @Test
+    fun `app change from nagged level cancels notification`() = runTest {
+        engine.scope = this
+        engine.onAppDwellTick(pkg, AppCategory.DISTRACTING, 180L)
+        advanceUntilIdle()
+
+        engine.onAppDwellTick("com.example.other", AppCategory.DISTRACTING, 5L)
+        verify(exactly = 1) { nagNotifier.cancelNag() }
+    }
+
+    @Test
+    fun `session ended cancels notification`() = runTest {
+        engine.scope = this
+        engine.onAppDwellTick(pkg, AppCategory.DISTRACTING, 180L)
+        advanceUntilIdle()
+
+        engine.onSessionEnded()
+        verify(atLeast = 1) { nagNotifier.cancelNag() }
     }
 
     @Test

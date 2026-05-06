@@ -60,4 +60,9 @@
     <string name="session_summary_dwell_format">%1$s — %2$d সেকেন্ড</string>
     <string name="action_start_another">আরেকটি সেশন শুরু করুন</string>
     <string name="action_done">সম্পন্ন</string>
+
+    <!-- Notification permission [DRAFT] -->
+    <string name="permission_notifications_title">বিজ্ঞপ্তি</string>
+    <string name="permission_notifications_description">ইনভিজিলেটরকে আপনার সেশনের সময় ফোকাস রিমাইন্ডার দেখাতে দেয়।</string>
+    <string name="permission_notifications_allow">বিজ্ঞপ্তির অনুমতি দিন</string>
 </resources>

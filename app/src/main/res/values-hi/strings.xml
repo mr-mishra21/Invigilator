@@ -60,4 +60,9 @@
     <string name="session_summary_dwell_format">%1$s — %2$d सेकंड</string>
     <string name="action_start_another">एक और सत्र शुरू करें</string>
     <string name="action_done">हो गया</string>
+
+    <!-- Notification permission [DRAFT] -->
+    <string name="permission_notifications_title">सूचनाएं</string>
+    <string name="permission_notifications_description">इनविजिलेटर को आपके सेशन के दौरान फोकस रिमाइंडर दिखाने देता है।</string>
+    <string name="permission_notifications_allow">सूचनाएं अनुमत करें</string>
 </resources>

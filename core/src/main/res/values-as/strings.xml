@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- [DRAFT] Assamese translations — needs native speaker review before pilot -->
+<resources>
+    <string name="notif_channel_nag_name">মনোযোগ ৰিমাইণ্ডাৰ</string>
+    <string name="notif_channel_nag_desc">আপোনাৰ অধ্যয়ন চেচনৰ সময়ত জাননী</string>
+    <string name="nag_title">পুনৰ মনোযোগ দিব?</string>
+    <string name="nag_body_format">আপুনি %1$s ত %2$d মিনিটৰ পৰা আছে। বিৰতি ল\'ব বা মনোযোগ দিব?</string>
+    <string name="nag_action_refocus">মনোযোগ দিয়ক</string>
+    <string name="nag_action_end_session">চেচন শেষ কৰক</string>
+</resources>

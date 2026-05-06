@@ -1,6 +1,7 @@
 package app.invigilator.core.intervention
 
 import app.invigilator.core.session.AppCategory
+import app.invigilator.core.util.AppNameResolver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -28,6 +29,8 @@ class InterventionEngine @Inject constructor(
     private val ttsManager: TtsManager,
     private val phraseLibrary: NudgePhraseLibrary,
     private val languageRepo: AppLanguageRepository,
+    private val nagNotifier: NagNotifier,
+    private val appNameResolver: AppNameResolver,
 ) {
     // Internal so tests can substitute a TestScope for deterministic coroutine execution.
     internal var scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -55,6 +58,9 @@ class InterventionEngine @Inject constructor(
         if (packageName != currentPackageName) {
             if (currentPackageName != null) {
                 Timber.d("InterventionEngine: app change $currentPackageName → $packageName, resetting level from $currentLevel")
+                if (currentLevel == InterventionLevel.NAGGED) {
+                    nagNotifier.cancelNag()
+                }
             }
             currentPackageName = packageName
             currentLevel = InterventionLevel.NONE
@@ -89,10 +95,12 @@ class InterventionEngine @Inject constructor(
             InterventionLevel.NUDGED_ONCE -> fireNudge(NudgePhraseLibrary.Level.FIRST_NUDGE)
             InterventionLevel.NUDGED_TWICE -> fireNudge(NudgePhraseLibrary.Level.SECOND_NUDGE)
             InterventionLevel.NAGGED -> {
-                // Phase 3: fire the visible nag here. For Phase 2,
-                // we still speak the nag-level voice phrase so audio
-                // continuity is preserved.
+                // Voice still fires for audio continuity with previous nudges.
                 fireNudge(NudgePhraseLibrary.Level.NAG)
+                // AND post the visible notification.
+                val displayName = appNameResolver.resolveDisplayName(packageName)
+                val dwellMinutes = (dwellSeconds / 60).toInt()
+                nagNotifier.postNag(displayName, dwellMinutes)
             }
             InterventionLevel.NONE,
             InterventionLevel.DISTRACTION_RECORDED -> { /* no audio side-effect */ }
@@ -107,6 +115,7 @@ class InterventionEngine @Inject constructor(
      */
     fun onSessionEnded() {
         Timber.d("InterventionEngine: session ended, resetting state")
+        nagNotifier.cancelNag()
         currentPackageName = null
         currentLevel = InterventionLevel.NONE
         lastPhraseSpoken = null

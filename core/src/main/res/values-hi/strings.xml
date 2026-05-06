@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- [DRAFT] Hindi translations — needs native speaker review before pilot -->
+<resources>
+    <string name="notif_channel_nag_name">फोकस रिमाइंडर</string>
+    <string name="notif_channel_nag_desc">अपने स्टडी सेशन के दौरान सूचनाएं</string>
+    <string name="nag_title">वापस फोकस करें?</string>
+    <string name="nag_body_format">आप %1$s पर %2$d मिनट से हैं। ब्रेक लें या फोकस करें?</string>
+    <string name="nag_action_refocus">फोकस करें</string>
+    <string name="nag_action_end_session">सेशन समाप्त करें</string>
+</resources>
