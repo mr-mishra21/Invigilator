@@ -9,8 +9,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import app.invigilator.BuildConfig
 
-// TODO: Replace with the real Google Form URL before pilot.
-private const val FEEDBACK_FORM_URL = "https://forms.gle/REPLACE_WITH_REAL_FORM_ID"
+private const val FEEDBACK_FORM_URL = "https://forms.gle/YUTgefv3nHKM8ZM98"
 
 @Composable
 fun SettingsRoute(
