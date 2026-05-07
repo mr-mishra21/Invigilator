@@ -27,6 +27,7 @@ import app.invigilator.ui.auth.PhoneEntryRoute
 import app.invigilator.ui.consent.ConsentRoute
 import app.invigilator.ui.home.ParentHomeRoute
 import app.invigilator.ui.home.StudentHomeRoute
+import app.invigilator.ui.settings.SettingsRoute
 import app.invigilator.ui.linking.ConfirmStudentScreen
 import app.invigilator.ui.linking.EnterCodeRoute
 import app.invigilator.ui.linking.LinkingCompletionRoute
@@ -340,26 +341,33 @@ fun InvigilatorNavHost(
         // ── Home ──────────────────────────────────────────────────────────────
         composable<Route.ParentHome> {
             ParentHomeRoute(
-                onLoggedOut = {
-                    navController.navigate(Route.Welcome) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                },
                 onNavigateToEnterCode = {
                     navController.navigate(Route.ParentEnterCode)
+                },
+                onSettings = {
+                    navController.navigate(Route.Settings)
                 },
             )
         }
 
         composable<Route.StudentHome> {
             StudentHomeRoute(
-                onLoggedOut = {
-                    navController.navigate(Route.Welcome) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                },
                 onStartSession = {
                     navController.navigate(Route.StartSession)
+                },
+                onSettings = {
+                    navController.navigate(Route.Settings)
+                },
+            )
+        }
+
+        composable<Route.Settings> {
+            SettingsRoute(
+                onBack = { navController.popBackStack() },
+                onSignedOut = {
+                    navController.navigate(Route.Welcome) {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                    }
                 },
             )
         }

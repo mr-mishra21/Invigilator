@@ -64,6 +64,28 @@
     <!-- Parent home -->
     <string name="parent_home_interventions_format">%1$d nudges, %2$d nags today</string>
 
+    <!-- Settings screen -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_language">Language</string>
+    <string name="settings_section_help">Help &amp; Feedback</string>
+    <string name="settings_section_account">Account</string>
+    <string name="settings_send_feedback">Send feedback</string>
+    <string name="settings_sign_out">Sign out</string>
+    <string name="settings_app_version">Invigilator v%1$s</string>
+    <string name="settings_menu_item">Settings</string>
+
+    <!-- Language labels (shown in their own script in all locales) -->
+    <string name="lang_english" translatable="false">English</string>
+    <string name="lang_hindi" translatable="false">हिन्दी</string>
+    <string name="lang_assamese" translatable="false">অসমীয়া</string>
+    <string name="lang_bengali" translatable="false">বাংলা</string>
+
+    <!-- Logout dialog (in Settings) -->
+    <string name="logout_dialog_title">Sign out?</string>
+    <string name="logout_dialog_message">You\'ll need to sign in again to use Invigilator.</string>
+    <string name="logout_dialog_confirm">Sign out</string>
+    <string name="logout_dialog_cancel">Cancel</string>
+
     <!-- Notification permission (Permissions screen) -->
     <string name="permission_notifications_title">Notifications</string>
     <string name="permission_notifications_description">Lets Invigilator show focus reminders during your sessions.</string>

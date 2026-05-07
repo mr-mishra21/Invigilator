@@ -15,7 +15,6 @@ import javax.inject.Inject
 data class StudentHomeUiState(
     val displayName: String = "",
     val parentDisplayName: String? = null,
-    val loggedOut: Boolean = false,
 )
 
 @HiltViewModel
@@ -29,13 +28,6 @@ class StudentHomeViewModel @Inject constructor(
 
     init {
         loadStudentData()
-    }
-
-    fun signOut() {
-        viewModelScope.launch {
-            authRepository.signOut()
-            _uiState.update { it.copy(loggedOut = true) }
-        }
     }
 
     private fun loadStudentData() {

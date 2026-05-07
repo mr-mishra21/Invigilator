@@ -61,4 +61,7 @@ sealed interface Route {
     // ── Home ──────────────────────────────────────────────────────────────────
     @Serializable data object ParentHome : Route
     @Serializable data object StudentHome : Route
+
+    // ── Settings ──────────────────────────────────────────────────────────
+    @Serializable data object Settings : Route
 }

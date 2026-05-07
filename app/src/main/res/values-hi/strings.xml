@@ -61,6 +61,28 @@
     <string name="action_start_another">एक और सत्र शुरू करें</string>
     <string name="action_done">हो गया</string>
 
+    <!-- Settings screen [DRAFT] -->
+    <string name="settings_title">सेटिंग्स</string>
+    <string name="settings_section_language">भाषा</string>
+    <string name="settings_section_help">सहायता और फ़ीडबैक</string>
+    <string name="settings_section_account">खाता</string>
+    <string name="settings_send_feedback">फ़ीडबैक भेजें</string>
+    <string name="settings_sign_out">साइन आउट</string>
+    <string name="settings_app_version">Invigilator v%1$s</string>
+    <string name="settings_menu_item">सेटिंग्स</string>
+
+    <!-- Language labels (same in all locales) -->
+    <string name="lang_english" translatable="false">English</string>
+    <string name="lang_hindi" translatable="false">हिन्दी</string>
+    <string name="lang_assamese" translatable="false">অসমীয়া</string>
+    <string name="lang_bengali" translatable="false">বাংলা</string>
+
+    <!-- Logout dialog [DRAFT] -->
+    <string name="logout_dialog_title">साइन आउट करें?</string>
+    <string name="logout_dialog_message">Invigilator का उपयोग करने के लिए आपको फिर से साइन इन करना होगा।</string>
+    <string name="logout_dialog_confirm">साइन आउट</string>
+    <string name="logout_dialog_cancel">रद्द करें</string>
+
     <!-- Parent home [DRAFT] -->
     <string name="parent_home_interventions_format">आज %1$d नज, %2$d नैग</string>
 

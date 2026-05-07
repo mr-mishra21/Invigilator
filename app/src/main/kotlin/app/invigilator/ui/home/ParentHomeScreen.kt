@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -24,10 +23,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,18 +51,15 @@ private fun sessionActivityLine(student: LinkedStudentRow): String {
 
 @Composable
 fun ParentHomeRoute(
-    onLoggedOut: () -> Unit,
     onNavigateToEnterCode: () -> Unit,
+    onSettings: () -> Unit,
     viewModel: ParentHomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    LaunchedEffect(state.loggedOut) {
-        if (state.loggedOut) onLoggedOut()
-    }
     ParentHomeScreen(
         state = state,
-        onLogout = viewModel::signOut,
         onAddStudent = onNavigateToEnterCode,
+        onSettings = onSettings,
     )
 }
 
@@ -73,29 +67,11 @@ fun ParentHomeRoute(
 @Composable
 fun ParentHomeScreen(
     state: ParentHomeUiState,
-    onLogout: () -> Unit,
     onAddStudent: () -> Unit,
+    onSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showMenu by remember { mutableStateOf(false) }
-    var showLogoutDialog by remember { mutableStateOf(false) }
-
-    if (showLogoutDialog) {
-        AlertDialog(
-            onDismissRequest = { showLogoutDialog = false },
-            title = { Text("Log out?") },
-            text = { Text("You'll need to sign in again.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    showLogoutDialog = false
-                    onLogout()
-                }) { Text("Log out") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showLogoutDialog = false }) { Text("Cancel") }
-            },
-        )
-    }
 
     Scaffold(
         topBar = {
@@ -107,10 +83,10 @@ fun ParentHomeScreen(
                     }
                     DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                         DropdownMenuItem(
-                            text = { Text("Log out") },
+                            text = { Text(stringResource(R.string.settings_menu_item)) },
                             onClick = {
                                 showMenu = false
-                                showLogoutDialog = true
+                                onSettings()
                             },
                         )
                     }

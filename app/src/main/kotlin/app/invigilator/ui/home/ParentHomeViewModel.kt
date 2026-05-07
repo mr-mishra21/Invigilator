@@ -10,7 +10,6 @@ import app.invigilator.core.user.LinkedStudentDoc
 import app.invigilator.core.user.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -18,7 +17,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.ZoneId
 import javax.inject.Inject
@@ -36,7 +34,6 @@ data class LinkedStudentRow(
 data class ParentHomeUiState(
     val linkedStudents: List<LinkedStudentRow> = emptyList(),
     val isLoading: Boolean = true,
-    val loggedOut: Boolean = false,
 )
 
 @HiltViewModel
@@ -47,21 +44,9 @@ class ParentHomeViewModel @Inject constructor(
     private val sessionSummaryRepo: SessionSummaryRepository,
 ) : ViewModel() {
 
-    private val _loggedOut = MutableStateFlow(false)
-
-    val uiState: StateFlow<ParentHomeUiState> = combine(
-        buildStudentRowFlow(),
-        _loggedOut,
-    ) { baseState, loggedOut ->
-        baseState.copy(loggedOut = loggedOut)
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, ParentHomeUiState())
-
-    fun signOut() {
-        viewModelScope.launch {
-            authRepository.signOut()
-            _loggedOut.value = true
-        }
-    }
+    val uiState: StateFlow<ParentHomeUiState> =
+        buildStudentRowFlow()
+            .stateIn(viewModelScope, SharingStarted.Eagerly, ParentHomeUiState())
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun buildStudentRowFlow(): kotlinx.coroutines.flow.Flow<ParentHomeUiState> {

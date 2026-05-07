@@ -61,6 +61,28 @@
     <string name="action_start_another">আন এটা ছেছন আৰম্ভ কৰক</string>
     <string name="action_done">সম্পন্ন</string>
 
+    <!-- Settings screen [DRAFT] -->
+    <string name="settings_title">ছেটিংছ</string>
+    <string name="settings_section_language">ভাষা</string>
+    <string name="settings_section_help">সহায় আৰু মতামত</string>
+    <string name="settings_section_account">একাউণ্ট</string>
+    <string name="settings_send_feedback">মতামত পঠাওক</string>
+    <string name="settings_sign_out">চাইন আউট</string>
+    <string name="settings_app_version">Invigilator v%1$s</string>
+    <string name="settings_menu_item">ছেটিংছ</string>
+
+    <!-- Language labels (same in all locales) -->
+    <string name="lang_english" translatable="false">English</string>
+    <string name="lang_hindi" translatable="false">हिन्दी</string>
+    <string name="lang_assamese" translatable="false">অসমীয়া</string>
+    <string name="lang_bengali" translatable="false">বাংলা</string>
+
+    <!-- Logout dialog [DRAFT] -->
+    <string name="logout_dialog_title">চাইন আউট কৰিবনে?</string>
+    <string name="logout_dialog_message">Invigilator ব্যৱহাৰ কৰিবলৈ আপোনাক পুনৰ চাইন ইন কৰিব লাগিব।</string>
+    <string name="logout_dialog_confirm">চাইন আউট</string>
+    <string name="logout_dialog_cancel">বাতিল কৰক</string>
+
     <!-- Parent home [DRAFT] -->
     <string name="parent_home_interventions_format">আজি %1$d নাজ, %2$d নেগ</string>
 
