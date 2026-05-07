@@ -61,6 +61,9 @@
     <string name="action_start_another">আন এটা ছেছন আৰম্ভ কৰক</string>
     <string name="action_done">সম্পন্ন</string>
 
+    <!-- Parent home [DRAFT] -->
+    <string name="parent_home_interventions_format">আজি %1$d নাজ, %2$d নেগ</string>
+
     <!-- Notification permission [DRAFT] -->
     <string name="permission_notifications_title">জাননী</string>
     <string name="permission_notifications_description">ইনভিজিলেটৰক আপোনাৰ চেচনৰ সময়ত ফোকাছ ৰিমাইণ্ডাৰ দেখুৱাবলৈ অনুমতি দিয়ে।</string>

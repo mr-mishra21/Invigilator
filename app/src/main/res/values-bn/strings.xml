@@ -61,6 +61,9 @@
     <string name="action_start_another">আরেকটি সেশন শুরু করুন</string>
     <string name="action_done">সম্পন্ন</string>
 
+    <!-- Parent home [DRAFT] -->
+    <string name="parent_home_interventions_format">আজ %1$d নাজ, %2$d নাগ</string>
+
     <!-- Notification permission [DRAFT] -->
     <string name="permission_notifications_title">বিজ্ঞপ্তি</string>
     <string name="permission_notifications_description">ইনভিজিলেটরকে আপনার সেশনের সময় ফোকাস রিমাইন্ডার দেখাতে দেয়।</string>

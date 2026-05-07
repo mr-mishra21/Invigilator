@@ -61,6 +61,9 @@
     <string name="action_start_another">Start another session</string>
     <string name="action_done">Done</string>
 
+    <!-- Parent home -->
+    <string name="parent_home_interventions_format">%1$d nudges, %2$d nags today</string>
+
     <!-- Notification permission (Permissions screen) -->
     <string name="permission_notifications_title">Notifications</string>
     <string name="permission_notifications_description">Lets Invigilator show focus reminders during your sessions.</string>

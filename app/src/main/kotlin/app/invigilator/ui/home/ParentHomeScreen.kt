@@ -34,7 +34,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import app.invigilator.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
@@ -175,6 +177,17 @@ fun ParentHomeScreen(
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
+                                        if (student.nudgesToday > 0 || student.nagsToday > 0) {
+                                            Text(
+                                                text = stringResource(
+                                                    R.string.parent_home_interventions_format,
+                                                    student.nudgesToday,
+                                                    student.nagsToday,
+                                                ),
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                        }
                                     }
                                     Text(
                                         text = student.accountStatus.replace('_', ' '),

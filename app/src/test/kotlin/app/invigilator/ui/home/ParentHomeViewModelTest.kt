@@ -49,13 +49,19 @@ class ParentHomeViewModelTest {
                 flowOf(sessions)
         }
 
-    private fun makeSession(endedAtMillis: Long, durationSeconds: Long = 1500) =
-        SessionDoc(
-            sessionId = "sid-${endedAtMillis}",
-            studentUid = studentUid,
-            endedAt = Timestamp(endedAtMillis / 1000, 0),
-            durationSeconds = durationSeconds,
-        )
+    private fun makeSession(
+        endedAtMillis: Long,
+        durationSeconds: Long = 1500,
+        nudgeCount: Int = 0,
+        nagCount: Int = 0,
+    ) = SessionDoc(
+        sessionId = "sid-${endedAtMillis}",
+        studentUid = studentUid,
+        endedAt = Timestamp(endedAtMillis / 1000, 0),
+        durationSeconds = durationSeconds,
+        nudgeCount = nudgeCount,
+        nagCount = nagCount,
+    )
 
     private fun makeVm(sessions: List<SessionDoc>) = ParentHomeViewModel(
         linkingRepository = mockLinking(listOf(studentDoc)),
@@ -101,5 +107,71 @@ class ParentHomeViewModelTest {
         val minutesAgo = vm.uiState.value.linkedStudents[0].lastSessionMinutesAgo
         // Allow ±1 minute for test execution time
         assertEquals(10.0, minutesAgo!!.toDouble(), 1.0)
+    }
+
+    @Test
+    fun linkedStudentRow_sums_nudgeCount_across_today_sessions() {
+        val nowMs = System.currentTimeMillis()
+        val sessions = listOf(
+            makeSession(nowMs - 1_000, nudgeCount = 2),
+            makeSession(nowMs - 2_000, nudgeCount = 1),
+            makeSession(nowMs - 3_000, nudgeCount = 0),
+        )
+
+        val vm = makeVm(sessions)
+
+        assertEquals(3, vm.uiState.value.linkedStudents[0].nudgesToday)
+    }
+
+    @Test
+    fun linkedStudentRow_sums_nagCount_across_today_sessions() {
+        val nowMs = System.currentTimeMillis()
+        val sessions = listOf(
+            makeSession(nowMs - 1_000, nagCount = 1),
+            makeSession(nowMs - 2_000, nagCount = 1),
+        )
+
+        val vm = makeVm(sessions)
+
+        assertEquals(2, vm.uiState.value.linkedStudents[0].nagsToday)
+    }
+
+    @Test
+    fun linkedStudentRow_excludes_sessions_from_other_days() {
+        val nowMs = System.currentTimeMillis()
+        val twoDaysAgoMs = nowMs - (2 * 24 * 60 * 60 * 1000L)
+        val sessions = listOf(
+            makeSession(nowMs - 1_000, nudgeCount = 2),
+            makeSession(twoDaysAgoMs, nudgeCount = 5),
+        )
+
+        val vm = makeVm(sessions)
+
+        assertEquals(2, vm.uiState.value.linkedStudents[0].nudgesToday)
+    }
+
+    @Test
+    fun linkedStudentRow_with_no_sessions_today_returns_zero_interventions() {
+        val twoDaysAgoMs = System.currentTimeMillis() - (2 * 24 * 60 * 60 * 1000L)
+        val sessions = listOf(makeSession(twoDaysAgoMs, nudgeCount = 3, nagCount = 1))
+
+        val vm = makeVm(sessions)
+
+        val row = vm.uiState.value.linkedStudents[0]
+        assertEquals(0, row.nudgesToday)
+        assertEquals(0, row.nagsToday)
+    }
+
+    @Test
+    fun linkedStudentRow_handles_old_session_docs_without_intervention_fields() {
+        val nowMs = System.currentTimeMillis()
+        // Old session docs default nudgeCount=0, nagCount=0 — should not crash
+        val sessions = listOf(makeSession(nowMs - 1_000))
+
+        val vm = makeVm(sessions)
+
+        val row = vm.uiState.value.linkedStudents[0]
+        assertEquals(0, row.nudgesToday)
+        assertEquals(0, row.nagsToday)
     }
 }

@@ -61,6 +61,9 @@
     <string name="action_start_another">एक और सत्र शुरू करें</string>
     <string name="action_done">हो गया</string>
 
+    <!-- Parent home [DRAFT] -->
+    <string name="parent_home_interventions_format">आज %1$d नज, %2$d नैग</string>
+
     <!-- Notification permission [DRAFT] -->
     <string name="permission_notifications_title">सूचनाएं</string>
     <string name="permission_notifications_description">इनविजिलेटर को आपके सेशन के दौरान फोकस रिमाइंडर दिखाने देता है।</string>

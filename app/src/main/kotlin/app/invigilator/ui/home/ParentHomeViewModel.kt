@@ -29,6 +29,8 @@ data class LinkedStudentRow(
     val accountStatus: String,
     val sessionsToday: Int,
     val lastSessionMinutesAgo: Long?,  // null if no sessions yet
+    val nudgesToday: Int = 0,
+    val nagsToday: Int = 0,
 )
 
 data class ParentHomeUiState(
@@ -92,7 +94,7 @@ class ParentHomeViewModel @Inject constructor(
         accountStatus: String,
         sessions: List<SessionDoc>,
     ): LinkedStudentRow {
-        val today = LocalDate.now()
+        val today = LocalDate.now(ZoneId.systemDefault())
         val todaySessions = sessions.filter { session ->
             val sessionDate = session.endedAt.toDate()
                 .toInstant()
@@ -103,12 +105,16 @@ class ParentHomeViewModel @Inject constructor(
         val lastSessionMinutesAgo = sessions.firstOrNull()?.let { s ->
             (System.currentTimeMillis() - s.endedAt.toDate().time) / 60_000
         }
+        val nudgesToday = todaySessions.sumOf { it.nudgeCount }
+        val nagsToday = todaySessions.sumOf { it.nagCount }
         return LinkedStudentRow(
             studentUid = doc.studentUid,
             displayName = doc.studentDisplayName,
             accountStatus = accountStatus,
             sessionsToday = todaySessions.size,
             lastSessionMinutesAgo = lastSessionMinutesAgo,
+            nudgesToday = nudgesToday,
+            nagsToday = nagsToday,
         )
     }
 }
