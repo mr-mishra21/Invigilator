@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import app.invigilator.core.intervention.InterventionEngine
+import app.invigilator.core.intervention.InterventionLevel
 import app.invigilator.core.session.ActiveSession
 import app.invigilator.core.session.AppCategory
 import app.invigilator.core.session.DistractionClassifier
@@ -47,6 +48,7 @@ class SessionMonitorService : Service() {
     @Inject lateinit var sessionStats: SessionStatsRepository
     @Inject lateinit var sessionSummaryRepo: SessionSummaryRepository
     @Inject lateinit var interventionEngine: InterventionEngine
+    @Inject lateinit var batteryDiagnostic: BatteryDiagnostic
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var monitorJob: Job? = null
@@ -57,12 +59,16 @@ class SessionMonitorService : Service() {
     private var currentApp: String? = null
     private var currentAppCategory: AppCategory = AppCategory.UNKNOWN
     private var currentAppEnteredAt: Long = 0L
+    private var lastInterventionLevel: InterventionLevel = InterventionLevel.NONE
+    private var pollTickCount: Int = 0
 
     companion object {
         private const val NOTIFICATION_ID = 1001
         private const val CHANNEL_ID = "session_monitor"
         private const val POLL_INTERVAL_MS = 2000L
         private const val DISTRACTION_DWELL_THRESHOLD_MS = 30_000L
+        // Fire diagnostic every ~30s. With POLL_INTERVAL_MS=2000ms: 30000/2000 = 15 ticks.
+        private const val DIAGNOSTIC_TICK_INTERVAL = 15
         const val ACTION_STOP = "app.invigilator.action.STOP_SESSION"
         const val ACTION_STOP_FROM_NAG = "app.invigilator.STOP_FROM_NAG"
     }
@@ -92,12 +98,18 @@ class SessionMonitorService : Service() {
     private fun startMonitoring() {
         sessionStats.reset()
         currentApp = null
+        lastInterventionLevel = InterventionLevel.NONE
+        pollTickCount = 0
         monitorJob?.cancel()
         monitorJob = scope.launch {
             while (isActive) {
                 detectForegroundApp()
                 tickInterventionEngine()
                 checkTimerExpiry()
+                pollTickCount++
+                if (pollTickCount % DIAGNOSTIC_TICK_INTERVAL == 0) {
+                    emitBatteryDiagnostic()
+                }
                 delay(POLL_INTERVAL_MS)
             }
         }
@@ -107,7 +119,7 @@ class SessionMonitorService : Service() {
     private fun tickInterventionEngine() {
         val app = currentApp ?: return
         val dwellSeconds = (System.currentTimeMillis() - currentAppEnteredAt) / 1000
-        interventionEngine.onAppDwellTick(
+        lastInterventionLevel = interventionEngine.onAppDwellTick(
             packageName = app,
             category = currentAppCategory,
             dwellSeconds = dwellSeconds,
@@ -175,6 +187,17 @@ class SessionMonitorService : Service() {
         } else if (currentAppCategory == AppCategory.DISTRACTING || currentAppCategory == AppCategory.UNKNOWN) {
             Timber.d("SessionMonitor: brief check (not counted) — $previous for ${dwellSeconds}s")
         }
+    }
+
+    private fun emitBatteryDiagnostic() {
+        val active = sessionState.activeSession.value ?: return
+        val elapsedSec = (System.currentTimeMillis() - active.startedAtMillis) / 1000L
+        batteryDiagnostic.logSnapshot(
+            sessionElapsedSeconds = elapsedSec,
+            foregroundPackage = currentApp ?: "unknown",
+            category = currentAppCategory.name,
+            interventionLevel = lastInterventionLevel.name,
+        )
     }
 
     private fun stopMonitoring() = endSession(SessionEndReason.USER_ENDED)
