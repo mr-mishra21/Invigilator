@@ -1,11 +1,20 @@
 package app.invigilator.core.intervention
 
+import app.invigilator.core.session.ActiveSession
 import app.invigilator.core.session.AppCategory
+import app.invigilator.core.session.InterventionRecord
+import app.invigilator.core.session.SessionStateRepository
+import app.invigilator.core.session.SessionStatsRepository
+import app.invigilator.core.session.SessionType
 import app.invigilator.core.util.AppNameResolver
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
+import kotlinx.coroutines.flow.MutableStateFlow
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -21,6 +30,18 @@ class InterventionEngineTest {
     private val languageRepo: AppLanguageRepository = mockk()
     private val nagNotifier: NagNotifier = mockk(relaxed = true)
     private val appNameResolver: AppNameResolver = mockk()
+    private val sessionStateRepository: SessionStateRepository = mockk()
+    private val sessionStatsRepository: SessionStatsRepository = mockk(relaxed = true)
+
+    private val activeSessionFlow = MutableStateFlow<ActiveSession?>(
+        ActiveSession(
+            sessionId = "test-session",
+            sessionType = SessionType.OpenEnded,
+            studentUid = "student-1",
+            startedAtMillis = System.currentTimeMillis() - 90_000L,
+            plannedDurationMinutes = 0,
+        )
+    )
 
     private lateinit var engine: InterventionEngine
 
@@ -32,7 +53,8 @@ class InterventionEngineTest {
         coEvery { languageRepo.isTtsAvailable(AppLanguage.ENGLISH) } returns true
         every { phraseLibrary.phrase(any(), any()) } returns "test phrase"
         every { appNameResolver.resolveDisplayName(any()) } answers { firstArg<String>().substringAfterLast('.') }
-        engine = InterventionEngine(ttsManager, phraseLibrary, languageRepo, nagNotifier, appNameResolver)
+        every { sessionStateRepository.activeSession } returns activeSessionFlow
+        engine = InterventionEngine(ttsManager, phraseLibrary, languageRepo, nagNotifier, appNameResolver, sessionStateRepository, sessionStatsRepository)
     }
 
     @Test
@@ -202,5 +224,69 @@ class InterventionEngineTest {
         // Verify the second speak used phrase2 (rotation worked)
         verify(exactly = 1) { ttsManager.speak(phrase1, AppLanguage.ENGLISH) }
         verify(exactly = 1) { ttsManager.speak(phrase2, AppLanguage.ENGLISH) }
+    }
+
+    @Test
+    fun `nudge once records FIRST_NUDGE event in stats repo`() = runTest {
+        engine.scope = this
+        engine.onAppDwellTick(pkg, AppCategory.DISTRACTING, 60L)
+        advanceUntilIdle()
+        val slot = slot<InterventionRecord>()
+        verify(exactly = 1) { sessionStatsRepository.recordIntervention(capture(slot)) }
+        assertEquals("FIRST_NUDGE", slot.captured.type)
+        assertEquals(pkg, slot.captured.packageName)
+    }
+
+    @Test
+    fun `nudge twice records SECOND_NUDGE event in stats repo`() = runTest {
+        engine.scope = this
+        engine.onAppDwellTick(pkg, AppCategory.DISTRACTING, 60L)
+        engine.onAppDwellTick(pkg, AppCategory.DISTRACTING, 120L)
+        advanceUntilIdle()
+        val records = mutableListOf<InterventionRecord>()
+        verify(exactly = 2) { sessionStatsRepository.recordIntervention(capture(records)) }
+        assertEquals("FIRST_NUDGE", records[0].type)
+        assertEquals("SECOND_NUDGE", records[1].type)
+    }
+
+    @Test
+    fun `nag records NAG event in stats repo`() = runTest {
+        engine.scope = this
+        engine.onAppDwellTick(pkg, AppCategory.DISTRACTING, 60L)
+        engine.onAppDwellTick(pkg, AppCategory.DISTRACTING, 120L)
+        engine.onAppDwellTick(pkg, AppCategory.DISTRACTING, 180L)
+        advanceUntilIdle()
+        val records = mutableListOf<InterventionRecord>()
+        verify(exactly = 3) { sessionStatsRepository.recordIntervention(capture(records)) }
+        assertEquals("NAG", records[2].type)
+    }
+
+    @Test
+    fun `recordEvent with no active session does not call stats repo`() = runTest {
+        engine.scope = this
+        activeSessionFlow.value = null
+        engine.onAppDwellTick(pkg, AppCategory.DISTRACTING, 60L)
+        advanceUntilIdle()
+        verify(exactly = 0) { sessionStatsRepository.recordIntervention(any()) }
+    }
+
+    @Test
+    fun `recordEvent includes correct atSecondsIntoSession`() = runTest {
+        engine.scope = this
+        val startMillis = System.currentTimeMillis() - 90_000L
+        activeSessionFlow.value = ActiveSession(
+            sessionId = "s1",
+            sessionType = SessionType.OpenEnded,
+            studentUid = "u1",
+            startedAtMillis = startMillis,
+            plannedDurationMinutes = 0,
+        )
+        engine.onAppDwellTick(pkg, AppCategory.DISTRACTING, 60L)
+        advanceUntilIdle()
+        val slot = slot<InterventionRecord>()
+        verify(exactly = 1) { sessionStatsRepository.recordIntervention(capture(slot)) }
+        // Elapsed is ~90s; allow ±5s for test execution timing
+        val elapsed = slot.captured.atSecondsIntoSession
+        assert(elapsed in 85L..95L) { "Expected ~90s elapsed but got ${elapsed}s" }
     }
 }

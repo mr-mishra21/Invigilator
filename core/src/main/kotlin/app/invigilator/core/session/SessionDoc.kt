@@ -17,10 +17,19 @@ data class SessionDoc(
     val endReason: String = "",              // "USER_ENDED" or "TIMER_EXPIRED"
     val distractionCount: Int = 0,
     val distractions: List<DistractionRecord> = emptyList(),
+    val nudgeCount: Int = 0,
+    val nagCount: Int = 0,
+    val interventions: List<InterventionRecord> = emptyList(),
 )
 
 data class DistractionRecord(
     val packageName: String = "",
     val category: String = "",   // "DISTRACTING" or "UNKNOWN"
     val dwellSeconds: Long = 0,
+)
+
+data class InterventionRecord(
+    val packageName: String = "",
+    val type: String = "",               // "FIRST_NUDGE", "SECOND_NUDGE", "NAG"
+    val atSecondsIntoSession: Long = 0,
 )

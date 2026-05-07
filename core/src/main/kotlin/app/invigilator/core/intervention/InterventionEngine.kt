@@ -1,6 +1,9 @@
 package app.invigilator.core.intervention
 
 import app.invigilator.core.session.AppCategory
+import app.invigilator.core.session.InterventionRecord
+import app.invigilator.core.session.SessionStateRepository
+import app.invigilator.core.session.SessionStatsRepository
 import app.invigilator.core.util.AppNameResolver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +34,8 @@ class InterventionEngine @Inject constructor(
     private val languageRepo: AppLanguageRepository,
     private val nagNotifier: NagNotifier,
     private val appNameResolver: AppNameResolver,
+    private val sessionStateRepository: SessionStateRepository,
+    private val sessionStatsRepository: SessionStatsRepository,
 ) {
     // Internal so tests can substitute a TestScope for deterministic coroutine execution.
     internal var scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -92,9 +97,16 @@ class InterventionEngine @Inject constructor(
 
         // Fire side effects for this transition.
         when (targetLevel) {
-            InterventionLevel.NUDGED_ONCE -> fireNudge(NudgePhraseLibrary.Level.FIRST_NUDGE)
-            InterventionLevel.NUDGED_TWICE -> fireNudge(NudgePhraseLibrary.Level.SECOND_NUDGE)
+            InterventionLevel.NUDGED_ONCE -> {
+                recordEvent(packageName, "FIRST_NUDGE")
+                fireNudge(NudgePhraseLibrary.Level.FIRST_NUDGE)
+            }
+            InterventionLevel.NUDGED_TWICE -> {
+                recordEvent(packageName, "SECOND_NUDGE")
+                fireNudge(NudgePhraseLibrary.Level.SECOND_NUDGE)
+            }
             InterventionLevel.NAGGED -> {
+                recordEvent(packageName, "NAG")
                 // Voice still fires for audio continuity with previous nudges.
                 fireNudge(NudgePhraseLibrary.Level.NAG)
                 // AND post the visible notification.
@@ -103,7 +115,7 @@ class InterventionEngine @Inject constructor(
                 nagNotifier.postNag(displayName, dwellMinutes)
             }
             InterventionLevel.NONE,
-            InterventionLevel.DISTRACTION_RECORDED -> { /* no audio side-effect */ }
+            InterventionLevel.DISTRACTION_RECORDED -> { /* no side-effect */ }
         }
 
         return currentLevel
@@ -119,6 +131,22 @@ class InterventionEngine @Inject constructor(
         currentPackageName = null
         currentLevel = InterventionLevel.NONE
         lastPhraseSpoken = null
+    }
+
+    private fun recordEvent(packageName: String, type: String) {
+        val active = sessionStateRepository.activeSession.value
+        if (active == null) {
+            Timber.w("InterventionEngine: recordEvent called with no active session")
+            return
+        }
+        val elapsedSeconds = (System.currentTimeMillis() - active.startedAtMillis) / 1000L
+        val record = InterventionRecord(
+            packageName = packageName,
+            type = type,
+            atSecondsIntoSession = elapsedSeconds,
+        )
+        sessionStatsRepository.recordIntervention(record)
+        Timber.d("InterventionEngine: recorded $type for $packageName at ${elapsedSeconds}s")
     }
 
     /**

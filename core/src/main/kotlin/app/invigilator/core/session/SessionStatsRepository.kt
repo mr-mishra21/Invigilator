@@ -12,6 +12,9 @@ interface SessionStatsRepository {
     /** Record that a distraction event has completed (student left the distracting app). */
     fun recordDistractionEvent(event: DistractionEvent)
 
+    /** Record a voice nudge or nag notification that fired during the session. */
+    fun recordIntervention(record: InterventionRecord)
+
     /** Reset stats to zero. Called at session start and end. */
     fun reset()
 }

@@ -232,6 +232,9 @@ class SessionMonitorService : Service() {
                     dwellSeconds = it.dwellSeconds,
                 )
             },
+            nudgeCount = stats.nudgeCount,
+            nagCount = stats.nagCount,
+            interventions = stats.interventions,
         )
     }
 
